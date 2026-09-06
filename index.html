@@ -127,7 +127,7 @@
   .datos-caja{background:#fff;border-radius:var(--r);padding:24px;box-shadow:var(--sombra);
     max-width:560px;display:grid;gap:18px}
   .campo{display:grid;gap:7px}
-  .campo label{font-weight:800;font-size:.88rem;color:var(--verde-osc)}
+  .campo label,.campo .label{font-weight:800;font-size:.88rem;color:var(--verde-osc)}
   .campo input{font:inherit;font-size:1rem;color:var(--tinta);background:var(--crema);
     border:1px solid var(--linea);border-radius:12px;padding:11px 13px;width:100%}
   .campo input::placeholder{color:var(--tinta-2);opacity:.7}
@@ -257,7 +257,7 @@
         <input id="f-hora" type="text" placeholder="A las 4 de la tarde">
       </div>
       <div class="campo">
-        <span class="label" id="lbl-enchufe" style="font-weight:800;font-size:.88rem;color:var(--verde-osc)">¿Hay enchufe cerca?</span>
+        <span class="label" id="lbl-enchufe">¿Hay enchufe cerca?</span>
         <div class="opciones" role="group" aria-labelledby="lbl-enchufe">
           <button type="button" data-g="enchufe" data-v="Sí" aria-pressed="false">Sí</button>
           <button type="button" data-g="enchufe" data-v="No" aria-pressed="false">No</button>
@@ -265,7 +265,7 @@
         </div>
       </div>
       <div class="campo">
-        <span class="label" id="lbl-piso" style="font-weight:800;font-size:.88rem;color:var(--verde-osc)">¿De qué es el piso?</span>
+        <span class="label" id="lbl-piso">¿De qué es el piso?</span>
         <div class="opciones" role="group" aria-labelledby="lbl-piso">
           <button type="button" data-g="piso" data-v="pasto" aria-pressed="false">Pasto</button>
           <button type="button" data-g="piso" data-v="cemento" aria-pressed="false">Cemento</button>
