@@ -25,6 +25,7 @@ llave que conecta con Notion es de solo lectura.
 | `index.html` | Toda la página: estilos, contenido y lógica en un solo archivo |
 | `logo.jpg` | El logo, también usado como vista previa al compartir el enlace |
 | `404.html` | Para que una dirección mal escrita no muestre la página de GitHub |
+| `manual/` | El manual de la dueña, en `/mundo-magico/manual/`. Lleva `noindex`: es para ella, no para los clientes |
 
 ## Lo que la página no puede saber
 
