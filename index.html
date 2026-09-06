@@ -121,6 +121,9 @@
   .dia.pasado{opacity:.3}
   .dia.ocupado{background:#F7D9D5;color:var(--rojo);text-decoration:line-through}
   .dia.elegido{background:var(--verde);color:#fff}
+  .cal-nota{margin-top:16px;background:#FDF3E3;border:1px solid var(--linea);border-radius:12px;
+    padding:12px 14px;font-size:.9rem;color:var(--tinta-2);line-height:1.45}
+  .cal-nota b{color:var(--tinta)}
   .leyenda{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;font-size:.85rem;color:var(--tinta-2)}
   .leyenda i{width:14px;height:14px;border-radius:5px;display:inline-block;vertical-align:-2px;margin-right:6px}
 
@@ -186,7 +189,8 @@
   <div class="wrap">
     <div class="titulo"><span class="n">01</span><h2>Elige tu juego</h2></div>
     <p class="intro">Antes de enamorarte de uno, mira el <b>espacio que necesita</b>. Es lo que
-    más falla: el juego cabe en el patio, pero no queda lugar para que los niños se bajen.</p>
+    más falla: el juego cabe en el patio, pero no queda lugar para que los niños se bajen.
+    <b>Puedes elegir más de uno</b> para el mismo día.</p>
     <ul class="juegos" id="juegos"></ul>
   </div>
 </section>
@@ -205,6 +209,7 @@
       </div>
       <div class="semana"><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span></div>
       <div class="dias" id="dias"></div>
+      <div class="cal-nota" id="cal-nota" hidden></div>
       <div class="leyenda">
         <span><i style="background:#EADCC6"></i>Libre</span>
         <span><i style="background:#F7D9D5"></i>Tomado</span>
@@ -222,7 +227,8 @@
         <span class="icono">⏰</span>
         <h3>Son 6 horas</h3>
         <p>Coordinamos contigo la hora de entrega y la de retiro, según a qué hora parte
-        el cumpleaños. Llevamos <b>hasta dos juegos por día</b>.</p>
+        el cumpleaños. Puedes pedir <b>más de un juego</b> para el mismo día: alcanzamos a
+        instalar hasta dos.</p>
       </div>
       <div class="tarjeta">
         <span class="icono">🔌</span>
@@ -238,9 +244,9 @@
       </div>
       <div class="tarjeta">
         <span class="icono">🚗</span>
-        <h3>Fuera de Pencahue</h3>
-        <p>Los precios son para Pencahue pueblo. Más lejos, el traslado sale
-        <b>entre $5.000 y $10.000</b> según la distancia.</p>
+        <h3>El traslado</h3>
+        <p>Dentro de la <b>comuna de Pencahue</b>, el traslado sale entre <b>$5.000 y
+        $10.000</b> según la distancia. Fuera de la comuna lo conversamos por WhatsApp.</p>
       </div>
     </div>
 
@@ -269,9 +275,6 @@
 
 <script>
 (function(){
-  /* Los datos los inyecta el servidor al generar la pagina: no hay
-     ninguna llamada extra, y no hay problema de CORS porque no se sale
-     de este origen. */
   /* Aqui los datos se piden al puente. Apps Script responde con las
      cabeceras que permiten leerlo desde otro sitio, que es el mismo
      patron que ya usa la tienda de ropa del gimnasio. */
@@ -282,9 +285,33 @@
   var WSP = '56997977749';          // +56 9 9797 7749
 
   var JUEGOS = [], LLENOS = [], POR_JUEGO = {};
+  /* Hasta que llegue una respuesta buena no se sabe nada. Es distinto de
+     «no hay dias tomados»: sin esto el calendario pinta todo libre y deja
+     pedir un dia que puede estar ocupado. */
+  var sinDatos = true;
+  /* Ultimo dia que trae el puente. Mas alla no sabe nada, asi que la
+     pagina no puede decir «libre». Si el puente todavia no lo manda —por
+     ejemplo si se publica la pagina antes que el puente— se usa el mismo
+     medio ano que el puente trae configurado, para no volver al error de
+     pintar libres unos dias que nadie ha mirado. */
+  var HASTA = '';
+  function topePorDefecto(){
+    return iso(new Date(hoy.getFullYear(), hoy.getMonth() + 6, 0));
+  }
 
   var $ = function(id){ return document.getElementById(id); };
-  var elegido = null, fecha = null;
+  /* Se pueden elegir varios juegos para el mismo dia: Diego confirmo el
+     6-sep-2026 que el tope son juegos, no reservas, y que una persona
+     puede pedir uno, dos o todos. Antes esto era un solo id y tocar el
+     segundo juego soltaba el primero, sin decirlo. */
+  var elegidos = [], fecha = null;
+  function estaElegido(id){ return elegidos.indexOf(id) !== -1; }
+  function juegosElegidos(){
+    return elegidos.map(function(id){
+      for (var i=0;i<JUEGOS.length;i++) if (JUEGOS[i].id === id) return JUEGOS[i];
+      return null;
+    }).filter(Boolean);
+  }
   var hoy = new Date(); hoy.setHours(0,0,0,0);
   var verMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
 
@@ -299,14 +326,14 @@
       return;
     }
     $('juegos').innerHTML = JUEGOS.map(function(j){
-      var on = elegido === j.id;
+      var on = estaElegido(j.id);
       /* Diego pidio no mencionar la medida de la mesa de air hockey.
          La regla general: si el campo Medidas viene vacio en Notion, esa
          fila no se muestra, en vez de salir con un hueco. */
       var filas = '';
       if (j.medidas) filas += '<dt>Mide</dt><dd>' + esc(j.medidas) + '</dd>';
       if (j.superficie) filas += '<dt>Necesita</dt><dd>' + esc(j.superficie) + '</dd>';
-      if (j.ninos) filas += '<dt>Caben</dt><dd>' + j.ninos + ' niños de 45 kg</dd>';
+      if (j.ninos) filas += '<dt>Caben</dt><dd>' + esc(j.ninos) + ' niños de 45 kg</dd>';
       else if (j.edad) filas += '<dt>Edad</dt><dd>' + esc(j.edad) + '</dd>';
 
       return '<li class="juego' + (on?' elegido':'') + '">' +
@@ -322,16 +349,31 @@
           '<button type="button" data-j="' + esc(j.id) + '">' + (on?'✓ Elegido':'Lo quiero') + '</button>' +
         '</div></li>';
     }).join('');
+
+    /* Las URL de foto que da Notion caducan a la hora. Llegan vencidas por
+       dos caminos: la copia guardada en este navegador y el respaldo de 6 h
+       del puente. Un icono de imagen rota se ve peor que no tener foto. */
+    Array.prototype.forEach.call($('juegos').querySelectorAll('img'), function(im){
+      im.addEventListener('error', function(){
+        if (!im.parentNode) return;
+        var aviso = document.createElement('div');
+        aviso.className = 'sinfoto';
+        aviso.textContent = 'Sin foto todavía';
+        im.parentNode.replaceChild(aviso, im);
+      });
+    });
   }
 
-  /* Una fecha no sirve si el dia esta cerrado del todo, o si el juego que
-     el visitante eligio ya esta comprometido ese dia. Sin juego elegido
-     solo se tachan los dias cerrados: es mas honesto que tachar de mas. */
+  /* Una fecha no sirve si el dia esta cerrado del todo, o si ALGUNO de los
+     juegos elegidos ya esta comprometido ese dia. Sin juego elegido solo se
+     tachan los dias cerrados: es mas honesto que tachar de mas. */
   function noDisponible(s){
     if (LLENOS.indexOf(s) !== -1) return true;
-    if (!elegido) return false;
-    var f = POR_JUEGO[String(elegido).replace(/-/g,'')] || [];
-    return f.indexOf(s) !== -1;
+    for (var i=0;i<elegidos.length;i++){
+      var f = POR_JUEGO[String(elegidos[i]).replace(/-/g,'')] || [];
+      if (f.indexOf(s) !== -1) return true;
+    }
+    return false;
   }
 
   function pintarCal(){
@@ -341,54 +383,92 @@
     var largo = new Date(y,m+1,0).getDate();
     var html = '';
     for (var h=0; h<hueco; h++) html += '<div class="dia vacio"></div>';
+    var lejos = false;
     for (var d=1; d<=largo; d++){
       var fd = new Date(y,m,d), s = iso(fd);
       var pasado = fd < hoy, ocupado = noDisponible(s);
+      /* Fuera de lo que el puente alcanza a ver: ni «libre» ni «tomado».
+         Se deja apagado y se explica abajo, en vez de mentir con el color. */
+      var ciego = !pasado && (sinDatos || (HASTA && s > HASTA));
+      if (ciego) lejos = true;
       html += '<button type="button" class="dia'+(pasado?' pasado':'')+(ocupado?' ocupado':'')+(fecha===s?' elegido':'')+'"'+
-              ' data-f="'+s+'"'+(pasado||ocupado?' disabled':'')+
+              ' data-f="'+s+'"'+(pasado||ocupado||ciego?' disabled':'')+
               ' aria-label="'+d+' de '+verMes.toLocaleDateString('es-CL',{month:'long'})+(ocupado?', ya tomado':'')+'">'+d+'</button>';
     }
     $('dias').innerHTML = html;
     $('antes').disabled = (y===hoy.getFullYear() && m===hoy.getMonth());
+    /* El puente solo trae medio ano de arriendos. Dejar avanzar mas alla
+       serviria dias en blanco que la pagina no puede garantizar. */
+    $('despues').disabled = !!(HASTA && iso(new Date(y,m+1,1)) > HASTA);
+
+    var nota = $('cal-nota');
+    if (nota){
+      if (sinDatos){
+        nota.innerHTML = '<b>No pudimos cargar la disponibilidad.</b> Escríbenos por WhatsApp ' +
+          'y te confirmamos al tiro si tu fecha está libre.';
+        nota.hidden = false;
+      } else if (lejos){
+        nota.innerHTML = '<b>Para estas fechas, escríbenos.</b> El calendario llega hasta seis ' +
+          'meses; más allá te confirmamos por WhatsApp.';
+        nota.hidden = false;
+      } else {
+        nota.hidden = true;
+      }
+    }
   }
 
   function barra(){
-    var j = null;
-    for (var i=0;i<JUEGOS.length;i++) if (JUEGOS[i].id===elegido) j = JUEGOS[i];
+    var js = juegosElegidos();
     var a = $('pedir'), e = $('estado');
-    if (!j || !fecha){
-      e.innerHTML = 'Elige un juego y una fecha<small>'+
-        (j ? 'Ya tienes el juego: falta el día' : (fecha ? 'Ya tienes el día: falta el juego' : 'Con eso te armamos el mensaje listo para enviar'))+'</small>';
+    if (!js.length || !fecha){
+      e.innerHTML = 'Elige tu juego y una fecha<small>'+
+        (js.length ? (js.length===1?'Ya tienes el juego: falta el día':'Ya tienes los juegos: falta el día')
+                   : (fecha ? 'Ya tienes el día: falta el juego' : 'Puedes elegir más de uno; te armamos el mensaje listo para enviar'))+'</small>';
       a.setAttribute('aria-disabled','true'); a.removeAttribute('href'); return;
     }
+    var total = 0, abono = 0;
+    js.forEach(function(j){ total += Number(j.precio)||0; abono += Number(j.abono)||0; });
     var bonita = new Date(fecha+'T12:00:00').toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
-    e.innerHTML = esc(j.nombre)+' · '+clp(j.precio)+'<small>'+bonita+(j.abono?' · abono '+clp(j.abono):'')+'</small>';
+    var titulo = js.length===1 ? esc(js[0].nombre) : js.length+' juegos';
+    e.innerHTML = titulo+' · '+clp(total)+'<small>'+bonita+(abono?' · abono '+clp(abono):'')+'</small>';
     a.setAttribute('aria-disabled','false');
+
+    /* Con un juego el mensaje queda igual que siempre —es el caso normal y
+       el que muestra el manual—; con varios se listan uno por linea y se
+       agrega el total, para que ella no tenga que sumar. */
+    var lineas = js.map(function(j){
+      return '🎈 ' + j.nombre + (js.length>1
+        ? ' — ' + clp(j.precio) + (j.abono ? ' (abono ' + clp(j.abono) + ')' : '')
+        : '');
+    }).join('\n');
+    var plata = js.length>1
+      ? '💵 Total ' + clp(total) + (abono ? ' · abono ' + clp(abono) : '')
+      : '💵 ' + clp(total) + (abono ? '  (abono ' + clp(abono) + ')' : '');
+
     a.href = 'https://wa.me/'+WSP+'?text='+encodeURIComponent(
       '¡Hola Mundo Mágico! Quiero reservar:\n\n'+
-      '🎈 '+j.nombre+'\n'+
+      lineas+'\n'+
       '📅 '+bonita+'\n'+
-      '💵 '+clp(j.precio)+(j.abono?'  (abono '+clp(j.abono)+')':'')+'\n\n'+
-      'Mi dirección es: \n'+
-      '(te cuento: tengo enchufe cerca y el piso es de ___)');
+      plata+'\n\n'+
+      '🙋 Mi nombre: \n'+
+      '📍 Comuna o sector: \n'+
+      '🏠 Dirección y referencia: \n'+
+      '🕒 Hora en que parte el cumpleaños: \n'+
+      '🔌 ¿Hay enchufe cerca? \n'+
+      '🌱 El piso es de (pasto / cemento / tierra): ');
   }
 
   document.addEventListener('click', function(ev){
     var b = ev.target.closest ? ev.target.closest('[data-j]') : null;
     if (b){
-      elegido = (elegido===b.getAttribute('data-j')) ? null : b.getAttribute('data-j');
+      var id = b.getAttribute('data-j');
+      var i = elegidos.indexOf(id);
+      if (i === -1) elegidos.push(id); else elegidos.splice(i, 1);
       /* Si la fecha elegida no sirve para el juego nuevo, se suelta:
          mas vale que elija otra a que mande un pedido imposible. */
       if (fecha && noDisponible(fecha)) fecha = null;
       pintarJuegos(); pintarCal(); barra();
-  if (D.actualizado){
-    $('pie-fecha').textContent = 'Disponibilidad actualizada el ' +
-      String(D.actualizado).slice(8,10) + '/' + String(D.actualizado).slice(5,7) +
-      ' a las ' + String(D.actualizado).slice(11,16);
-  }
-  if (D.respaldo){
-    $('pie-fecha').textContent += ' · mostrando la última copia guardada';
-  } return;
+      return;
     }
     var d = ev.target.closest ? ev.target.closest('[data-f]') : null;
     if (d && !d.disabled){ fecha = (fecha===d.getAttribute('data-f')) ? null : d.getAttribute('data-f'); pintarCal(); barra(); return; }
@@ -401,7 +481,22 @@
     JUEGOS = D.juegos || [];
     LLENOS = D.diasLlenos || [];
     POR_JUEGO = D.ocupados || {};
-    if (elegido && !JUEGOS.some(function(j){ return j.id === elegido; })) elegido = null;
+    /* Solo una respuesta con fecha y sin error cuenta como saber algo. */
+    sinDatos = !D.actualizado || !!D.error;
+    HASTA = D.hasta || topePorDefecto();
+    /* Las URL de foto de Notion caducan a la hora. La copia guardada en el
+       navegador puede ser de ayer: mejor tarjeta sin foto que icono roto. */
+    if (provisional && D.actualizado && (Date.now() - Date.parse(D.actualizado)) > 50*60*1000){
+      JUEGOS = JUEGOS.map(function(j){
+        var c = {}; for (var k in j) if (Object.prototype.hasOwnProperty.call(j,k)) c[k] = j[k];
+        c.foto = ''; return c;
+      });
+    }
+    /* Si un juego dejo de estar disponible en Notion, se cae de la
+       seleccion en vez de quedar colgado en el mensaje. */
+    elegidos = elegidos.filter(function(id){
+      return JUEGOS.some(function(j){ return j.id === id; });
+    });
     if (fecha && noDisponible(fecha)) fecha = null;
     pintarJuegos(); pintarCal(); barra();
 
@@ -429,22 +524,33 @@
   } catch(e){}
   if (!hubo) aplicar(D, true);
 
+  /* Cuando el puente no sirve, se conserva lo que ya estaba en pantalla en
+     vez de reemplazarlo por vacio, y se avisa donde el visitante mira. */
+  function fallo(){
+    var pie = $('pie-fecha');
+    if (JUEGOS.length){
+      if (pie) pie.textContent = pie.textContent.replace(' · comprobando…','') +
+        ' · no pudimos comprobar si cambió algo';
+    } else {
+      sinDatos = true;
+      $('juegos').innerHTML = '<li class="aviso-vacio">No pudimos cargar los juegos en este momento. ' +
+        'Recarga en un rato, o escríbenos por WhatsApp y te contamos todo.</li>';
+      pintarCal(); barra();
+      if (pie) pie.textContent = '';
+    }
+  }
+
   fetch(API)
     .then(function(r){ return r.json(); })
     .then(function(d){
+      /* El puente responde 200 tambien cuando Notion se cayo o falta el
+         token. Aplicar eso borraria de la pantalla —y del navegador— la
+         copia buena, y dejaria el calendario entero en blanco. */
+      if (!d || d.error || !d.actualizado){ fallo(); return; }
       aplicar(d, false);
       try { localStorage.setItem(MEM, JSON.stringify(d)); } catch(e){}
     })
-    .catch(function(){
-      var pie = $('pie-fecha');
-      if (!JUEGOS.length){
-        $('juegos').innerHTML = '<li class="aviso-vacio">No pudimos cargar los juegos en este momento. ' +
-          'Recarga en un rato, o escríbenos por WhatsApp y te contamos todo.</li>';
-        if (pie) pie.textContent = '';
-      } else if (pie){
-        pie.textContent += ' · no se pudo comprobar si cambió algo';
-      }
-    });
+    .catch(fallo);
 
 })();
 </script>

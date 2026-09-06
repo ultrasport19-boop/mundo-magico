@@ -26,5 +26,23 @@ llave que conecta con Notion es de solo lectura.
 | `logo.jpg` | El logo, también usado como vista previa al compartir el enlace |
 | `404.html` | Para que una dirección mal escrita no muestre la página de GitHub |
 
-El manual para la dueña del negocio y el código del puente viven aparte, en
-`Escritorio/MUNDO-MAGICO/`.
+## Lo que la página no puede saber
+
+El puente consulta los arriendos de los **próximos seis meses**. Más allá de eso no sabe
+nada, así que la página se topa ahí sola en vez de pintar como «libre» un día que nadie ha
+mirado. El puente manda ese límite en el campo `hasta` del JSON.
+
+Si el puente se cae, la página conserva lo último que supo y lo dice. Si nunca alcanzó a
+saber nada, apaga el calendario y manda a escribir por WhatsApp: no muestra días libres
+que no puede garantizar.
+
+## Lo que vive fuera de este repo
+
+En `Escritorio/MUNDO-MAGICO/` (el computador de Diego):
+
+| | |
+|---|---|
+| `MANUAL_MUNDO_MAGICO.html` | El manual de la dueña. Se le entrega a ella; no habla de tokens ni de código |
+| `ENCENDERLO.md` | La ficha técnica de Diego: cómo publicar, qué revisar, qué queda pendiente |
+| `apps-script/` | El puente. `clasp push` **no** publica: hay que correr `desplegar_mundo_magico.ps1` |
+| `pruebas/` | `node pruebas/probar_puente.js` antes de publicar el puente |
