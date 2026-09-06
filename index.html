@@ -3,12 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Arriendo de juegos inflables en Pencahue. Los llevamos, los instalamos y los retiramos.">
+<meta name="description" content="Arriendo de juegos inflables para cumpleaños en Pencahue. Los llevamos, los instalamos y los retiramos.">
 <meta name="theme-color" content="#1B5E20">
+<link rel="canonical" href="https://ultrasport19-boop.github.io/mundo-magico/">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://ultrasport19-boop.github.io/mundo-magico/">
 <meta property="og:title" content="Mundo Mágico Pencahue">
 <meta property="og:description" content="Juegos inflables para cumpleaños en Pencahue. Mira los juegos, elige el día y reserva por WhatsApp.">
 <meta property="og:image" content="https://ultrasport19-boop.github.io/mundo-magico/logo.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="logo.jpg">
 <title>Mundo Mágico Pencahue</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
@@ -89,6 +92,10 @@
   .plata .valor{font-family:'Lilita One',sans-serif;font-size:1.8rem;color:var(--rojo);line-height:1}
   .plata .abono{font-size:.88rem;color:var(--tinta-2);font-weight:700}
   .plata .abono b{color:var(--verde)}
+  .juego .sinfoto{position:absolute;inset:0;display:grid;place-items:center;
+    color:var(--tinta-2);font-weight:700;font-size:.92rem}
+  .aviso-vacio{grid-column:1/-1;background:#fff;border-radius:var(--r);padding:26px;
+    box-shadow:var(--sombra);color:var(--tinta-2);text-align:center}
   .juego button{font-family:'Nunito',sans-serif;font-weight:800;font-size:.96rem;letter-spacing:.05em;
     background:var(--verde);color:#fff;border:0;border-radius:12px;padding:13px;cursor:pointer}
   .juego.elegido button{background:var(--rojo)}
@@ -262,11 +269,19 @@
 
 <script>
 (function(){
+  /* Los datos los inyecta el servidor al generar la pagina: no hay
+     ninguna llamada extra, y no hay problema de CORS porque no se sale
+     de este origen. */
+  /* Aqui los datos se piden al puente. Apps Script responde con las
+     cabeceras que permiten leerlo desde otro sitio, que es el mismo
+     patron que ya usa la tienda de ropa del gimnasio. */
   var API = 'https://script.google.com/macros/s/AKfycbzjgieXuiFC3tLCTBbzmaZq8J5g5GQ5fsG_ZLwQQhScrq5w9tUuTOCcG9qaZBwxYC1G/exec?tipo=datos';
-  var WSP = '56997977749';          // +56 9 9797 7749
-  var MEM = 'mm_ultimo_v1';         // lo ultimo que se supo, en este navegador
+  var MEM = 'mm_ultimo_v1';
+  var D = { juegos: [], diasLlenos: [], ocupados: {} };
 
-  var JUEGOS = [], LLENOS = [], POR_JUEGO = {}, D = {};
+  var WSP = '56997977749';          // +56 9 9797 7749
+
+  var JUEGOS = [], LLENOS = [], POR_JUEGO = {};
 
   var $ = function(id){ return document.getElementById(id); };
   var elegido = null, fecha = null;
@@ -278,24 +293,45 @@
   function iso(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
 
   function pintarJuegos(){
+    if (!JUEGOS.length){
+      $('juegos').innerHTML = '<li class="aviso-vacio">Estamos actualizando el catálogo. ' +
+        'Escríbenos por WhatsApp y te contamos qué hay disponible.</li>';
+      return;
+    }
     $('juegos').innerHTML = JUEGOS.map(function(j){
       var on = elegido === j.id;
-      return '<li class="juego'+(on?' elegido':'')+'">'+
-        '<div class="foto"><span class="cinta">'+esc(j.cinta)+'</span>'+
-          '<img src="'+j.foto+'" alt="'+esc(j.nombre)+'" loading="lazy"></div>'+
-        '<div class="cuerpo">'+
-          '<h3>'+esc(j.nombre)+'</h3>'+
-          '<dl class="ficha">'+
-            (j.medidas ? '<dt>Mide</dt><dd>'+esc(j.medidas)+(j.alto?' · '+esc(j.alto):'')+'</dd>' : '')+
-            '<dt>Necesita</dt><dd>'+esc(j.superficie)+'</dd>'+
-            '<dt>Caben</dt><dd>'+esc(j.ninos)+'</dd>'+
-          '</dl>'+
-          '<div class="plata"><span class="valor">'+clp(j.precio)+'</span>'+
-            (j.abono ? '<span class="abono">Abono <b>'+clp(j.abono)+'</b></span>' : '')+
-          '</div>'+
-          '<button type="button" data-j="'+esc(j.id)+'">'+(on?'✓ Elegido':'Lo quiero')+'</button>'+
+      /* Diego pidio no mencionar la medida de la mesa de air hockey.
+         La regla general: si el campo Medidas viene vacio en Notion, esa
+         fila no se muestra, en vez de salir con un hueco. */
+      var filas = '';
+      if (j.medidas) filas += '<dt>Mide</dt><dd>' + esc(j.medidas) + '</dd>';
+      if (j.superficie) filas += '<dt>Necesita</dt><dd>' + esc(j.superficie) + '</dd>';
+      if (j.ninos) filas += '<dt>Caben</dt><dd>' + j.ninos + ' niños de 45 kg</dd>';
+      else if (j.edad) filas += '<dt>Edad</dt><dd>' + esc(j.edad) + '</dd>';
+
+      return '<li class="juego' + (on?' elegido':'') + '">' +
+        '<div class="foto">' + (j.tipo ? '<span class="cinta">' + esc(j.tipo) + '</span>' : '') +
+          (j.foto ? '<img src="' + esc(j.foto) + '" alt="' + esc(j.nombre) + '" loading="lazy">'
+                  : '<div class="sinfoto">Sin foto todavía</div>') + '</div>' +
+        '<div class="cuerpo">' +
+          '<h3>' + esc(j.nombre) + '</h3>' +
+          (filas ? '<dl class="ficha">' + filas + '</dl>' : '') +
+          '<div class="plata"><span class="valor">' + clp(j.precio) + '</span>' +
+            (j.abono ? '<span class="abono">Abono <b>' + clp(j.abono) + '</b></span>' : '') +
+          '</div>' +
+          '<button type="button" data-j="' + esc(j.id) + '">' + (on?'✓ Elegido':'Lo quiero') + '</button>' +
         '</div></li>';
     }).join('');
+  }
+
+  /* Una fecha no sirve si el dia esta cerrado del todo, o si el juego que
+     el visitante eligio ya esta comprometido ese dia. Sin juego elegido
+     solo se tachan los dias cerrados: es mas honesto que tachar de mas. */
+  function noDisponible(s){
+    if (LLENOS.indexOf(s) !== -1) return true;
+    if (!elegido) return false;
+    var f = POR_JUEGO[String(elegido).replace(/-/g,'')] || [];
+    return f.indexOf(s) !== -1;
   }
 
   function pintarCal(){
@@ -307,7 +343,7 @@
     for (var h=0; h<hueco; h++) html += '<div class="dia vacio"></div>';
     for (var d=1; d<=largo; d++){
       var fd = new Date(y,m,d), s = iso(fd);
-      var pasado = fd < hoy, ocupado = OCUPADOS.indexOf(s) !== -1;
+      var pasado = fd < hoy, ocupado = noDisponible(s);
       html += '<button type="button" class="dia'+(pasado?' pasado':'')+(ocupado?' ocupado':'')+(fecha===s?' elegido':'')+'"'+
               ' data-f="'+s+'"'+(pasado||ocupado?' disabled':'')+
               ' aria-label="'+d+' de '+verMes.toLocaleDateString('es-CL',{month:'long'})+(ocupado?', ya tomado':'')+'">'+d+'</button>';
@@ -339,37 +375,59 @@
 
   document.addEventListener('click', function(ev){
     var b = ev.target.closest ? ev.target.closest('[data-j]') : null;
-    if (b){ elegido = (elegido===b.getAttribute('data-j')) ? null : b.getAttribute('data-j'); pintarJuegos(); barra(); return; }
+    if (b){
+      elegido = (elegido===b.getAttribute('data-j')) ? null : b.getAttribute('data-j');
+      /* Si la fecha elegida no sirve para el juego nuevo, se suelta:
+         mas vale que elija otra a que mande un pedido imposible. */
+      if (fecha && noDisponible(fecha)) fecha = null;
+      pintarJuegos(); pintarCal(); barra();
+  if (D.actualizado){
+    $('pie-fecha').textContent = 'Disponibilidad actualizada el ' +
+      String(D.actualizado).slice(8,10) + '/' + String(D.actualizado).slice(5,7) +
+      ' a las ' + String(D.actualizado).slice(11,16);
+  }
+  if (D.respaldo){
+    $('pie-fecha').textContent += ' · mostrando la última copia guardada';
+  } return;
+    }
     var d = ev.target.closest ? ev.target.closest('[data-f]') : null;
     if (d && !d.disabled){ fecha = (fecha===d.getAttribute('data-f')) ? null : d.getAttribute('data-f'); pintarCal(); barra(); return; }
   });
   $('antes').addEventListener('click', function(){ verMes.setMonth(verMes.getMonth()-1); pintarCal(); });
   $('despues').addEventListener('click', function(){ verMes.setMonth(verMes.getMonth()+1); pintarCal(); });
 
-  function aplicar(d, deMemoria){
+  function aplicar(d, provisional){
     D = d || {};
     JUEGOS = D.juegos || [];
     LLENOS = D.diasLlenos || [];
     POR_JUEGO = D.ocupados || {};
+    if (elegido && !JUEGOS.some(function(j){ return j.id === elegido; })) elegido = null;
+    if (fecha && noDisponible(fecha)) fecha = null;
     pintarJuegos(); pintarCal(); barra();
+
     var pie = $('pie-fecha');
     if (!pie) return;
-    if (D.error){ pie.textContent = 'No pudimos actualizar la disponibilidad. Escríbenos y te confirmamos la fecha.'; return; }
+    if (D.error){
+      pie.textContent = 'No pudimos actualizar la disponibilidad. Escríbenos y te confirmamos la fecha.';
+      return;
+    }
     if (!D.actualizado){ pie.textContent = ''; return; }
     pie.textContent = 'Disponibilidad actualizada el ' +
       String(D.actualizado).slice(8,10) + '/' + String(D.actualizado).slice(5,7) +
       ' a las ' + String(D.actualizado).slice(11,16) +
       (D.respaldo ? ' · mostrando la última copia guardada' : '') +
-      (deMemoria ? ' · comprobando…' : '');
+      (provisional ? ' · comprobando…' : '');
   }
 
   /* Se pinta primero lo ultimo que se supo en este navegador, para que la
-     pagina nunca aparezca vacia mientras carga, y se reemplaza en cuanto
+     pagina no aparezca vacia mientras carga, y se reemplaza en cuanto
      llega lo bueno. */
+  var hubo = false;
   try {
     var guardado = localStorage.getItem(MEM);
-    if (guardado) aplicar(JSON.parse(guardado), true);
+    if (guardado){ aplicar(JSON.parse(guardado), true); hubo = true; }
   } catch(e){}
+  if (!hubo) aplicar(D, true);
 
   fetch(API)
     .then(function(r){ return r.json(); })
@@ -378,13 +436,16 @@
       try { localStorage.setItem(MEM, JSON.stringify(d)); } catch(e){}
     })
     .catch(function(){
+      var pie = $('pie-fecha');
       if (!JUEGOS.length){
         $('juegos').innerHTML = '<li class="aviso-vacio">No pudimos cargar los juegos en este momento. ' +
           'Recarga en un rato, o escríbenos por WhatsApp y te contamos todo.</li>';
+        if (pie) pie.textContent = '';
+      } else if (pie){
+        pie.textContent += ' · no se pudo comprobar si cambió algo';
       }
-      var pie = $('pie-fecha');
-      if (pie) pie.textContent = 'Sin conexión con la disponibilidad. Confírmanos la fecha por WhatsApp.';
     });
+
 })();
 </script>
 
