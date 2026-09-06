@@ -124,6 +124,20 @@
   .cal-nota{margin-top:16px;background:#FDF3E3;border:1px solid var(--linea);border-radius:12px;
     padding:12px 14px;font-size:.9rem;color:var(--tinta-2);line-height:1.45}
   .cal-nota b{color:var(--tinta)}
+  .datos-caja{background:#fff;border-radius:var(--r);padding:24px;box-shadow:var(--sombra);
+    max-width:560px;display:grid;gap:18px}
+  .campo{display:grid;gap:7px}
+  .campo label{font-weight:800;font-size:.88rem;color:var(--verde-osc)}
+  .campo input{font:inherit;font-size:1rem;color:var(--tinta);background:var(--crema);
+    border:1px solid var(--linea);border-radius:12px;padding:11px 13px;width:100%}
+  .campo input::placeholder{color:var(--tinta-2);opacity:.7}
+  .campo input:focus-visible{outline:3px solid var(--verde-claro);outline-offset:1px;background:#fff}
+  .opciones{display:flex;gap:9px;flex-wrap:wrap}
+  .opciones button{font:inherit;font-weight:700;font-size:.95rem;cursor:pointer;
+    background:var(--crema);color:var(--tinta-2);border:1px solid var(--linea);
+    border-radius:999px;padding:9px 17px}
+  .opciones button[aria-pressed="true"]{background:var(--verde);border-color:var(--verde);color:#fff}
+  .opciones button:focus-visible{outline:3px solid var(--verde-claro);outline-offset:2px}
   .leyenda{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;font-size:.85rem;color:var(--tinta-2)}
   .leyenda i{width:14px;height:14px;border-radius:5px;display:inline-block;vertical-align:-2px;margin-right:6px}
 
@@ -221,7 +235,50 @@
 
 <section>
   <div class="wrap">
-    <div class="titulo"><span class="n">03</span><h2>Lo que hay que saber</h2></div>
+    <div class="titulo"><span class="n">03</span><h2>Cuéntanos un poco</h2></div>
+    <p class="intro">Nada de esto es obligatorio, pero lo que escribas viaja en el mensaje y nos
+    ahorra la mitad de la conversación. Lo que dejes en blanco, simplemente no se manda.</p>
+
+    <div class="datos-caja">
+      <div class="campo">
+        <label for="f-nombre">¿Cómo te llamas?</label>
+        <input id="f-nombre" type="text" autocomplete="name" placeholder="Tu nombre">
+      </div>
+      <div class="campo">
+        <label for="f-sector">¿En qué comuna o sector?</label>
+        <input id="f-sector" type="text" placeholder="Pencahue, Botalcura, Corinto…">
+      </div>
+      <div class="campo">
+        <label for="f-dir">Dirección y cómo llegar</label>
+        <input id="f-dir" type="text" placeholder="La calle, y alguna referencia">
+      </div>
+      <div class="campo">
+        <label for="f-hora">¿A qué hora parte el cumpleaños?</label>
+        <input id="f-hora" type="text" placeholder="A las 4 de la tarde">
+      </div>
+      <div class="campo">
+        <span class="label" id="lbl-enchufe" style="font-weight:800;font-size:.88rem;color:var(--verde-osc)">¿Hay enchufe cerca?</span>
+        <div class="opciones" role="group" aria-labelledby="lbl-enchufe">
+          <button type="button" data-g="enchufe" data-v="Sí" aria-pressed="false">Sí</button>
+          <button type="button" data-g="enchufe" data-v="No" aria-pressed="false">No</button>
+          <button type="button" data-g="enchufe" data-v="No sé" aria-pressed="false">No sé</button>
+        </div>
+      </div>
+      <div class="campo">
+        <span class="label" id="lbl-piso" style="font-weight:800;font-size:.88rem;color:var(--verde-osc)">¿De qué es el piso?</span>
+        <div class="opciones" role="group" aria-labelledby="lbl-piso">
+          <button type="button" data-g="piso" data-v="pasto" aria-pressed="false">Pasto</button>
+          <button type="button" data-g="piso" data-v="cemento" aria-pressed="false">Cemento</button>
+          <button type="button" data-g="piso" data-v="tierra" aria-pressed="false">Tierra</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="titulo"><span class="n">04</span><h2>Lo que hay que saber</h2></div>
     <div class="tarjetas">
       <div class="tarjeta">
         <span class="icono">⏰</span>
@@ -300,6 +357,24 @@
   }
 
   var $ = function(id){ return document.getElementById(id); };
+
+  /* Lo que la persona cuenta de su fiesta. Antes esto iban seis lineas en
+     blanco dentro del mensaje, esperando que las rellenara en WhatsApp; en
+     el telefono nadie lo hace y a Yocy le llegaban seis etiquetas vacias.
+     Ahora se pregunta aqui, y lo que quede vacio no se manda.
+     Nada de esto se guarda ni se envia a ninguna parte: solo arma el texto
+     del mensaje de WhatsApp que la persona decide enviar. */
+  var CAMPOS = [
+    { id:'f-nombre', clave:'nombre',  linea:'🙋 Mi nombre: ' },
+    { id:'f-sector', clave:'sector',  linea:'📍 Comuna o sector: ' },
+    { id:'f-dir',    clave:'dir',     linea:'🏠 Dirección y referencia: ' },
+    { id:'f-hora',   clave:'hora',    linea:'🕒 El cumpleaños parte: ' }
+  ];
+  var GRUPOS = [
+    { clave:'enchufe', linea:'🔌 ¿Hay enchufe cerca? ' },
+    { clave:'piso',    linea:'🌱 El piso es de: ' }
+  ];
+  var extra = { nombre:'', sector:'', dir:'', hora:'', enchufe:'', piso:'' };
   /* Se pueden elegir varios juegos para el mismo dia: Diego confirmo el
      6-sep-2026 que el tope son juegos, no reservas, y que una persona
      puede pedir uno, dos o todos. Antes esto era un solo id y tocar el
@@ -449,13 +524,21 @@
       '¡Hola Mundo Mágico! Quiero reservar:\n\n'+
       lineas+'\n'+
       '📅 '+bonita+'\n'+
-      plata+'\n\n'+
-      '🙋 Mi nombre: \n'+
-      '📍 Comuna o sector: \n'+
-      '🏠 Dirección y referencia: \n'+
-      '🕒 Hora en que parte el cumpleaños: \n'+
-      '🔌 ¿Hay enchufe cerca? \n'+
-      '🌱 El piso es de (pasto / cemento / tierra): ');
+      plata + cuento());
+  }
+
+  /* Solo lo que la persona escribio. Una etiqueta vacia no le sirve a
+     nadie: si no lo conto, mejor que el mensaje no la mencione y se le
+     pregunte por WhatsApp. */
+  function cuento(){
+    var l = [];
+    CAMPOS.forEach(function(c){
+      if (extra[c.clave]) l.push(c.linea + extra[c.clave]);
+    });
+    GRUPOS.forEach(function(g){
+      if (extra[g.clave]) l.push(g.linea + extra[g.clave]);
+    });
+    return l.length ? '\n\n' + l.join('\n') : '';
   }
 
   document.addEventListener('click', function(ev){
@@ -473,6 +556,25 @@
     var d = ev.target.closest ? ev.target.closest('[data-f]') : null;
     if (d && !d.disabled){ fecha = (fecha===d.getAttribute('data-f')) ? null : d.getAttribute('data-f'); pintarCal(); barra(); return; }
   });
+  CAMPOS.forEach(function(c){
+    var el = $(c.id);
+    if (!el) return;
+    el.addEventListener('input', function(){ extra[c.clave] = el.value.trim(); barra(); });
+  });
+
+  /* Los botones de si/no y del piso: se marcan, y volver a tocar el que ya
+     estaba marcado lo suelta, por si alguien se equivoco. */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-g]'), function(b){
+    b.addEventListener('click', function(){
+      var g = b.getAttribute('data-g'), v = b.getAttribute('data-v');
+      extra[g] = (extra[g] === v) ? '' : v;
+      Array.prototype.forEach.call(document.querySelectorAll('[data-g="'+g+'"]'), function(o){
+        o.setAttribute('aria-pressed', String(o.getAttribute('data-v') === extra[g]));
+      });
+      barra();
+    });
+  });
+
   $('antes').addEventListener('click', function(){ verMes.setMonth(verMes.getMonth()-1); pintarCal(); });
   $('despues').addEventListener('click', function(){ verMes.setMonth(verMes.getMonth()+1); pintarCal(); });
 
