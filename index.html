@@ -389,7 +389,7 @@
       <div class="tarjeta">
         <span class="icono">🚗</span>
         <h3>El traslado</h3>
-        <p>En sectores cercanos, como <b>Figueroa</b>, el traslado sale <b>$5.000</b>. En
+        <p>Se suma aparte al precio del juego. En sectores cercanos, como <b>Figueroa</b>, sale <b>$5.000</b>. En
         <b>Batuco o Corinto</b>, <b>$10.000</b>. Si tu sector es otro, o es fuera de la
         comuna, escríbenos y te decimos cuánto sale.</p>
       </div>
@@ -490,8 +490,8 @@
       </details>
       <details>
         <summary>¿Cuánto sale el traslado?</summary>
-        <p>$5.000 en sectores cercanos, como Figueroa, y $10.000 en Batuco o Corinto. Si tu
-        sector es otro, te lo confirmamos por WhatsApp.</p>
+        <p>Se suma aparte al precio del juego: $5.000 en sectores cercanos, como Figueroa, y
+        $10.000 en Batuco o Corinto. Si tu sector es otro, te lo confirmamos por WhatsApp.</p>
       </details>
       <details>
         <summary>Vivo fuera de la comuna</summary>
@@ -602,7 +602,7 @@
      la duena (cuestionario del 21-nov, audio y textos del 21 y 22-nov).
      Datos a confirmar, que NO se usan: si el traslado se cobra por viaje o por
      juego cuando van dos (se suma una vez); el abono cuando se llevan dos
-     juntos (se muestra la suma de los abonos de cada juego); cuanto sale el
+     juntos (22-nov: $25.000 fijo, confirmado por la duena); cuanto sale el
      traslado en los sectores que ella no nombro (se muestran los dos valores). */
   var COND = {
     trasladoComuna: [5000, 10000],   // dentro de la comuna: 5.000 o 10.000 segun el sector
@@ -621,8 +621,8 @@
      grande con la mesa, quedan en 100.000 (duena, 21-nov). Solo esas dos
      combinaciones; cualquier otra suma los precios de cada juego. */
   var JUNTOS = [
-    { ids: [ID.mega, ID.amarillo], precio: 100000 },
-    { ids: [ID.mega, ID.mesa],     precio: 100000 }
+    { ids: [ID.mega, ID.amarillo], precio: 100000, abono: 25000 },
+    { ids: [ID.mega, ID.mesa],     precio: 100000, abono: 25000 }
   ];
 
   /* Por donde llego la persona, desde la direccion: ?c=ig, fb, tt, wa, qr o rec.
@@ -734,7 +734,7 @@
       var ids = JUNTOS[i].ids;
       if ((ids[0] === ka && ids[1] === kb) || (ids[0] === kb && ids[1] === ka)){
         var suma = (Number(a.precio)||0) + (Number(b.precio)||0);
-        return JUNTOS[i].precio < suma ? { precio: JUNTOS[i].precio, suma: suma } : null;
+        return JUNTOS[i].precio < suma ? { precio: JUNTOS[i].precio, suma: suma, abono: JUNTOS[i].abono || 0 } : null;
       }
     }
     return null;
@@ -748,7 +748,7 @@
       var p = juntoDe(j, o);
       if (!p) return;
       for (var i=0;i<l.length;i++) if (l[i].precio === p.precio){ l[i].nombres.push(o.nombre); return; }
-      l.push({ precio: p.precio, nombres: [o.nombre] });
+      l.push({ precio: p.precio, abono: p.abono, nombres: [o.nombre] });
     });
     return l;
   }
@@ -858,7 +858,7 @@
       var idp = 'porque-' + sinGuiones(j.id);
       /* Con que otro juego sale menos: «Los dos juntos, $100.000: con X o con Y.» */
       var junto = parejasDe(j).map(function(p){
-        return '<p class="junto">Los dos juntos, ' + clp(p.precio) + ': con ' +
+        return '<p class="junto">Los dos juntos, ' + clp(p.precio) + (p.abono ? ' (abono ' + clp(p.abono) + ')' : '') + ': con ' +
           esc(lista(p.nombres, 'o con')) + '.</p>';
       }).join('');
 
@@ -913,7 +913,7 @@
     var pares = [];
     for (var i=0;i<JUEGOS.length;i++) for (var k=i+1;k<JUEGOS.length;k++){
       var p = juntoDe(JUEGOS[i], JUEGOS[k]);
-      if (p) pares.push(JUEGOS[i].nombre + ' con ' + JUEGOS[k].nombre + ', ' + clp(p.precio) + ' los dos');
+      if (p) pares.push(JUEGOS[i].nombre + ' con ' + JUEGOS[k].nombre + ', ' + clp(p.precio) + ' los dos, con abono de ' + clp(p.abono || 0));
     }
     var intro = $('intro-juntos'), faq = $('faq-juntos');
     if (intro) intro.textContent = pares.length ? ' Algunos salen menos si los llevas juntos: lo dice cada tarjeta.' : '';
@@ -1036,7 +1036,7 @@
     js.forEach(function(j){ c.total += Number(j.precio)||0; c.abono += Number(j.abono)||0; });
     if (js.length === 2){
       c.junto = juntoDe(js[0], js[1]);
-      if (c.junto) c.total = c.junto.precio;
+      if (c.junto){ c.total = c.junto.precio; if (c.junto.abono) c.abono = c.junto.abono; }
     }
     c.min = c.max = c.total;
     if (extra.lugar === 'comuna'){
