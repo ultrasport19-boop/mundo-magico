@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1B5E20">
+<link rel="icon" href="../logo.jpg">
+<title>Reserva enviada, Mundo Mágico Pencahue</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@400;700;800&display=swap">
+<style>
+  /* Pagina de gracias. Se llega tocando «Ver qué pasa ahora» en la pagina
+     principal, despues de abrir WhatsApp (nada navega solo hasta aqui). Lo
+     que muestra viene despues del # de la direccion (numero, fecha, juegos
+     y montos): el navegador no se lo manda a ningun servidor, y nunca trae
+     nombre ni direccion de la persona. */
+  :root{
+    --crema:#FFF7EC; --crema-2:#F6E9D6; --arena:#EADCC6;
+    --verde:#2E7D32; --verde-osc:#1B5E20; --verde-claro:#66BB4A;
+    --rojo:#D93A2B; --sol:#F7B733;
+    --tinta:#2A1F14; --tinta-2:#6B5B47; --linea:#E3D4BC;
+    --sombra:0 10px 26px rgba(80,55,20,.13); --r:20px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--crema);color:var(--tinta);
+    font-family:'Nunito',system-ui,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  [hidden]{display:none!important}
+  .wrap{max-width:640px;margin:0 auto;padding:0 22px}
+  h1,h2{font-family:'Lilita One',Impact,sans-serif;font-weight:400;letter-spacing:.014em;text-wrap:balance}
+  header{background:var(--verde-osc);color:var(--crema);padding:0 0 34px}
+  .guirnalda{height:22px;background:
+    repeating-linear-gradient(90deg,var(--rojo) 0 26px,var(--sol) 26px 52px,var(--verde-claro) 52px 78px);
+    -webkit-mask:repeating-linear-gradient(90deg,#000 0 24px,transparent 24px 26px);
+            mask:repeating-linear-gradient(90deg,#000 0 24px,transparent 24px 26px)}
+  header .eti{display:block;margin:28px 0 8px;font-weight:800;font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:var(--sol)}
+  header h1{font-size:clamp(1.9rem,6vw,2.6rem);line-height:1.08;margin:0 0 12px}
+  header p{margin:0;color:#DCEFD6;max-width:44ch}
+  .numero{display:inline-block;margin-top:18px;background:rgba(255,247,236,.14);border:1px dashed rgba(247,183,51,.7);
+    border-radius:14px;padding:10px 16px;font-weight:800}
+  .numero b{display:block;font-family:'Lilita One',sans-serif;font-weight:400;font-size:1.6rem;letter-spacing:.06em;color:var(--sol)}
+  .numero small{display:block;font-weight:400;color:#CFE6C9;font-size:.85rem}
+  main{padding:30px 0 60px}
+  .caja{background:#fff;border-radius:var(--r);box-shadow:var(--sombra);padding:22px 24px;margin:0 0 20px}
+  .caja h2{font-size:1.3rem;margin:0 0 12px;color:var(--verde-osc)}
+  .resumen{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+  .resumen li{display:flex;gap:10px}
+  .resumen .ico{flex:0 0 1.4em}
+  .pasos{margin:0;padding-left:1.3rem;display:grid;gap:8px;color:var(--tinta-2)}
+  .pasos b{color:var(--tinta)}
+  .botones{display:grid;gap:12px;margin-top:6px}
+  .boton{display:block;text-align:center;text-decoration:none;font-weight:800;letter-spacing:.04em;
+    padding:15px 22px;border-radius:12px;font-size:1rem}
+  .boton.wa{background:var(--sol);color:var(--tinta)}
+  .boton.volver{background:var(--crema-2);color:var(--verde-osc);border:1px solid var(--linea)}
+  .boton:focus-visible{outline:3px solid var(--verde);outline-offset:2px}
+  footer{background:var(--tinta);color:var(--crema-2);padding:26px 0;font-size:.9rem}
+  @media (max-width:640px){.wrap{padding:0 16px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="guirnalda"></div>
+  <div class="wrap">
+    <span class="eti">Mundo Mágico Pencahue</span>
+    <div id="con-datos" hidden>
+      <h1>¡Listo! Ahora envía el mensaje</h1>
+      <p>Te abrimos WhatsApp con tu pedido escrito. Si todavía no lo envías, vuelve a WhatsApp y apriétale enviar.</p>
+      <div class="numero">Tu número de reserva<b id="numero"></b><small>Guárdalo: con él ubicamos tu pedido si vuelves a escribirnos.</small></div>
+    </div>
+    <div id="sin-datos">
+      <h1>No encontramos tu reserva</h1>
+      <p>Esta página muestra tu pedido después de elegir juego y fecha. Vuelve a la página para armar tu pedido, o escríbenos directo.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="caja" id="caja-resumen" hidden>
+    <h2>Lo que pediste</h2>
+    <ul class="resumen" id="resumen"></ul>
+  </div>
+
+  <div class="caja" id="caja-pasos" hidden>
+    <h2>Qué pasa ahora</h2>
+    <ol class="pasos">
+      <li><b>Envía el mensaje</b> que se abrió en WhatsApp. Si no se abrió, usa el botón de abajo.</li>
+      <li><b>Revisamos que tu fecha siga libre</b> y te respondemos por WhatsApp (respondemos de 08:00 a 22:00).</li>
+      <li><b>Desde que te confirmamos, tienes hasta 2 días para pagar el abono</b><span id="paso-abono"></span>,
+      por transferencia o en efectivo. Tu fecha queda reservada recién cuando lo pagas: mientras tanto
+      sigue disponible para otra persona, y si pasan los 2 días sin abono la reserva no se hace.</li>
+      <li><b>El resto se paga al terminar el arriendo.</b> Si el día amanece con lluvia y prefieren no hacerlo, se devuelve el abono completo. Si se cancela por otro motivo, el abono no se devuelve, pero puedes reagendar para otra fecha.</li>
+    </ol>
+  </div>
+
+  <div class="botones">
+    <a class="boton wa" id="otra-vez" href="#">¿No se abrió WhatsApp? Toca aquí</a>
+    <a class="boton volver" id="volver" href="../">Volver a la página</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">Mundo Mágico Pencahue<br>Juegos inflables para cumpleaños</div>
+</footer>
+
+<script>
+(function(){
+  /* El mismo numero que index.html. Nunca se lee un numero de la direccion. */
+  var WSP = '56997977749';
+
+  function $(id){ return document.getElementById(id); }
+  function clp(n){ return '$' + Number(n||0).toLocaleString('es-CL'); }
+  function entero(v){ var n = parseInt(v, 10); return (isFinite(n) && n >= 0 && n < 100000000) ? n : 0; }
+
+  /* Se lee a mano (sin URLSearchParams) para que funcione en telefonos viejos. */
+  var p = {};
+  String(location.hash || '').replace(/^#/, '').split('&').forEach(function(par){
+    var i = par.indexOf('=');
+    if (i < 1) return;
+    try { p[par.slice(0, i)] = decodeURIComponent(par.slice(i + 1).replace(/\+/g, ' ')); } catch(e){}
+  });
+
+  var numero = /^MM-\d{4}-[A-Z2-9]{3}$/.test(p.n || '') ? p.n : '';
+  var fecha = /^\d{4}-\d{2}-\d{2}$/.test(p.f || '') ? p.f : '';
+  var juegos = String(p.j || '').split('|').map(function(s){ return s.trim().slice(0, 80); })
+    .filter(Boolean).slice(0, 4);
+  var total = entero(p.t), abono = entero(p.a), e1 = entero(p.e1), e2 = entero(p.e2);
+  var trasladoFuera = p.tf === '1';
+  /* `pk=1`: el total es el precio por llevar los dos juegos juntos. */
+  var juntos = p.pk === '1' && juegos.length === 2;
+  /* `x`: que extras trae el estimado. Solo estas tres combinaciones. */
+  var EXTRAS = { t: 'traslado', g: 'generador', tg: 'traslado y generador' };
+  var extras = Object.prototype.hasOwnProperty.call(EXTRAS, p.x || '') ? EXTRAS[p.x] : '';
+
+  var consulta = '¡Hola Mundo Mágico! Tengo una consulta.';
+  if (!numero || !fecha || !juegos.length){
+    $('otra-vez').textContent = 'Escríbenos por WhatsApp';
+    $('otra-vez').href = 'https://wa.me/' + WSP + '?text=' + encodeURIComponent(consulta);
+    return;
+  }
+
+  var bonita = new Date(fecha + 'T12:00:00').toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long' });
+  $('numero').textContent = numero;
+  $('con-datos').hidden = false;
+  $('sin-datos').hidden = true;
+  document.title = 'Reserva ' + numero + ', Mundo Mágico Pencahue';
+
+  var filas = [];
+  juegos.forEach(function(j){ filas.push(['🎈', j]); });
+  filas.push(['📅', bonita]);
+  filas.push(['💵', (juntos ? 'Los dos juntos ' : (juegos.length > 1 ? 'Juegos ' : '')) + clp(total)]);
+  if (abono) filas.push(['🔒', 'Abono para reservar la fecha: ' + clp(abono)]);
+  if (e1 && e2) filas.push(['🧮', 'Estimado' + (extras ? ' con ' + extras : '') + ': ' +
+                                  (e1 === e2 ? clp(e1) : clp(e1) + ' a ' + clp(e2)) +
+                                  (trasladoFuera ? ' más el traslado' : '')]);
+  else if (trasladoFuera) filas.push(['🚗', 'El traslado fuera de la comuna se cotiza por WhatsApp']);
+  $('resumen').innerHTML = '';
+  filas.forEach(function(f){
+    var li = document.createElement('li');
+    var a = document.createElement('span'); a.className = 'ico'; a.textContent = f[0];
+    var b = document.createElement('span'); b.textContent = f[1];
+    li.appendChild(a); li.appendChild(b);
+    $('resumen').appendChild(li);
+  });
+  if (abono) $('paso-abono').textContent = ' de ' + clp(abono);
+  $('caja-resumen').hidden = false;
+  $('caja-pasos').hidden = false;
+
+  /* El boton de repuesto vuelve a armar el pedido, pero sin lo que la
+     persona escribio de su fiesta (eso no viaja hasta aqui). Basta para
+     que la duena lo reconozca por el numero y pregunte el resto. */
+  var texto = '¡Hola Mundo Mágico! Quiero reservar (N.º ' + numero + '):\n\n' +
+    juegos.map(function(j){ return '🎈 ' + j; }).join('\n') + '\n' +
+    '📅 ' + bonita + '\n' +
+    '💵 ' + (juntos ? 'Los dos juntos ' : (juegos.length > 1 ? 'Total juegos ' : '')) + clp(total) + (abono ? (juegos.length > 1 ? ', abono ' : ' (abono ') + clp(abono) + (juegos.length > 1 ? '' : ')') : '');
+  $('otra-vez').href = 'https://wa.me/' + WSP + '?text=' + encodeURIComponent(texto);
+})();
+</script>
+
+</body>
+</html>

@@ -15,13 +15,15 @@
 <link rel="icon" href="logo.jpg">
 <title>Mundo Mágico Pencahue</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<!-- Dato a confirmar (C27): los datos estructurados LocalBusiness (nombre, Pencahue,
+     telefono, url, sameAs) van aqui cuando este la direccion de la pagina de Facebook
+     del negocio, que es la unica red que usa (no tiene ficha de Google). Sin esa
+     direccion confirmada no se publica nada. -->
 <style>
   /* ---------------------------------------------------------------
-     MUNDO MAGICO PENCAHUE · 6-sep-2026
+     MUNDO MAGICO PENCAHUE, 6-sep-2026 (mejoras 21 y 22-nov-2026)
      La paleta sale del logo real: rojo de castillo, verde de pasto y
-     amarillo de sol, sobre crema. La primera version la invente en
-     violeta antes de ver el logo; esta es la de verdad.
-     Nada en comun con Ultra-Sport 19: otro negocio, otro cliente.
+     amarillo de sol, sobre crema.
      --------------------------------------------------------------- */
   :root{
     --crema:#FFF7EC; --crema-2:#F6E9D6; --arena:#EADCC6;
@@ -42,9 +44,7 @@
   .wrap{max-width:1060px;margin:0 auto;padding:0 22px}
   h1,h2,h3,.display{font-family:'Lilita One',Impact,sans-serif;font-weight:400;letter-spacing:.014em}
   img{max-width:100%}
-
-  .proto{background:var(--sol);color:var(--tinta);padding:11px 22px;
-    font-weight:800;font-size:.85rem;text-align:center}
+  [hidden]{display:none!important}
 
   /* --- portada ------------------------------------------------------ */
   header.hero{position:relative;background:var(--verde-osc);color:var(--crema);overflow:hidden}
@@ -76,13 +76,20 @@
 
   /* --- juegos -------------------------------------------------------- */
   .juegos{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:22px;list-style:none;padding:0;margin:0}
+  @media (max-width:360px){.juegos{grid-template-columns:1fr}}
   .juego{background:#fff;border:3px solid transparent;border-radius:var(--r);
     overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--sombra);transition:border-color .14s,transform .14s}
   .juego.elegido{border-color:var(--verde-claro);transform:translateY(-3px)}
   .juego .foto{aspect-ratio:4/3;background:var(--arena);position:relative;overflow:hidden}
   .juego .foto img{width:100%;height:100%;object-fit:cover;display:block}
-  .juego .foto .cinta{position:absolute;left:0;top:14px;background:var(--rojo);color:#fff;
+  .juego .foto .cinta{position:absolute;left:0;top:14px;z-index:1;background:var(--rojo);color:#fff;
     font-weight:800;font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;padding:6px 14px 6px 12px;border-radius:0 8px 8px 0}
+  /* Varias fotos por juego: se deslizan con el dedo, sin botones. */
+  .carrusel{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+  .carrusel::-webkit-scrollbar{display:none}
+  .carrusel img{flex:0 0 100%;scroll-snap-align:start}
+  .juego .foto .mas{position:absolute;right:10px;bottom:10px;z-index:1;background:rgba(42,31,20,.74);color:#fff;
+    font-weight:800;font-size:.74rem;padding:4px 11px;border-radius:999px;pointer-events:none}
   .juego .cuerpo{padding:18px 19px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
   .juego h3{font-size:1.3rem;margin:0;line-height:1.14;color:var(--verde-osc)}
   .ficha{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:.92rem;color:var(--tinta-2);margin:0}
@@ -99,12 +106,18 @@
   .juego button{font-family:'Nunito',sans-serif;font-weight:800;font-size:.96rem;letter-spacing:.05em;
     background:var(--verde);color:#fff;border:0;border-radius:12px;padding:13px;cursor:pointer}
   .juego.elegido button{background:var(--rojo)}
+  .juego button:disabled{background:var(--crema-2);color:var(--tinta-2);cursor:not-allowed}
   .juego button:focus-visible{outline:3px solid var(--sol);outline-offset:2px}
+  .juego .porque{margin:-4px 0 0;font-size:.86rem;font-weight:700;color:var(--rojo-osc);line-height:1.4}
+  /* Con que otro juego sale menos si se llevan los dos juntos. */
+  .juego .junto{margin:0;background:#E4F2DF;color:var(--verde-osc);border-radius:10px;padding:8px 11px;
+    font-size:.86rem;font-weight:700;line-height:1.4}
 
   /* --- calendario ---------------------------------------------------- */
   .cal-caja{background:#fff;border-radius:var(--r);padding:24px;box-shadow:var(--sombra);max-width:560px}
+  @media (max-width:400px){.cal-caja{padding:18px 14px}}
   .cal-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
-  .cal-cab .mes{font-family:'Lilita One',sans-serif;font-size:1.32rem;text-transform:capitalize;color:var(--verde-osc)}
+  .cal-cab .mes{font-family:'Lilita One',sans-serif;font-size:1.32rem;color:var(--verde-osc)}
   .cal-cab button{background:var(--crema-2);color:var(--verde-osc);border:1px solid var(--linea);
     border-radius:10px;width:40px;height:40px;font-size:1.1rem;cursor:pointer;font-weight:800}
   .cal-cab button:disabled{opacity:.34;cursor:default}
@@ -113,12 +126,13 @@
   .semana span{text-align:center;font-weight:800;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--tinta-2)}
   .dias{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
   .dia{aspect-ratio:1;border:0;border-radius:12px;background:var(--crema-2);color:var(--tinta);
-    font-family:'Nunito',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;display:grid;place-items:center}
+    font-family:'Nunito',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;display:grid;place-items:center;padding:0}
   .dia:hover:not(:disabled){background:var(--sol)}
   .dia:focus-visible{outline:3px solid var(--verde);outline-offset:2px}
   .dia.vacio{background:transparent;cursor:default}
   .dia:disabled{cursor:not-allowed}
   .dia.pasado{opacity:.3}
+  .dia.pronto{opacity:.45}
   .dia.ocupado{background:#F7D9D5;color:var(--rojo);text-decoration:line-through}
   .dia.elegido{background:var(--verde);color:#fff}
   .cal-nota{margin-top:16px;background:#FDF3E3;border:1px solid var(--linea);border-radius:12px;
@@ -132,6 +146,7 @@
     border:1px solid var(--linea);border-radius:12px;padding:11px 13px;width:100%}
   .campo input::placeholder{color:var(--tinta-2);opacity:.7}
   .campo input:focus-visible{outline:3px solid var(--verde-claro);outline-offset:1px;background:#fff}
+  .campo .ayuda{font-size:.84rem;color:var(--tinta-2);margin:0}
   .opciones{display:flex;gap:9px;flex-wrap:wrap}
   .opciones button{font:inherit;font-weight:700;font-size:.95rem;cursor:pointer;
     background:var(--crema);color:var(--tinta-2);border:1px solid var(--linea);
@@ -146,9 +161,29 @@
     border-top:4px solid var(--sol);padding:15px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
   .barra .estado{flex:1;min-width:210px;font-weight:800;font-size:.98rem}
   .barra .estado small{display:block;font-weight:400;color:#CFE6C9;font-size:.85rem}
-  .barra a{background:var(--sol);color:var(--tinta);text-decoration:none;font-weight:800;
+  .barra #pedir{background:var(--sol);color:var(--tinta);text-decoration:none;font-weight:800;
     letter-spacing:.04em;padding:14px 26px;border-radius:12px;font-size:1rem;white-space:nowrap}
-  .barra a[aria-disabled="true"]{background:rgba(255,247,236,.18);color:#CFE6C9;pointer-events:none}
+  .barra #pedir[aria-disabled="true"]{background:rgba(255,247,236,.18);color:#CFE6C9;pointer-events:none}
+  .barra #pedir:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  /* Boton de consulta: va DENTRO de la barra, que esta siempre a la vista.
+     Asi hay una forma de escribir aunque todavia no se elija juego ni dia,
+     y no tapa el texto de la pagina (cuando colgaba sobre la barra tapaba
+     una linea en los telefonos angostos). Cuando la reserva ya esta lista se
+     esconde para no duplicar botones. */
+  .barra .dudas{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+    background:#fff;color:var(--verde-osc);border:2px solid var(--verde-claro);border-radius:999px;
+    padding:8px 15px 8px 10px;font-weight:800;font-size:.92rem;text-decoration:none}
+  .barra .dudas svg{width:22px;height:22px;flex:0 0 auto}
+  .barra .dudas:focus-visible{outline:3px solid var(--sol);outline-offset:2px}
+  .barra.lista .dudas{display:none}
+  /* Aviso despues de tocar «Reservar»: WhatsApp se abre en esta misma
+     pestana (como siempre funciono), y al volver la persona ve su numero y
+     un enlace a los pasos que siguen. No navega solo a ninguna parte. */
+  .barra .listo{flex-basis:100%;margin:0;background:rgba(255,247,236,.12);border:1px dashed rgba(247,183,51,.7);
+    border-radius:12px;padding:10px 14px;font-size:.9rem;line-height:1.45;color:#DCEFD6}
+  .barra .listo b{color:var(--sol);white-space:nowrap}
+  .barra .listo a{color:#fff;font-weight:800}
+  .barra .listo a:focus-visible{outline:3px solid var(--sol);outline-offset:2px}
 
   /* --- bloques ------------------------------------------------------- */
   .tarjetas{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:18px}
@@ -166,19 +201,44 @@
   .clave .lluvia{margin-top:16px;padding-top:14px;border-top:2px dashed rgba(247,183,51,.5)}
   .clave .lluvia b{color:var(--sol)}
 
-  footer{background:var(--tinta);color:var(--crema-2);padding:34px 0;font-size:.92rem}
-  footer .wrap{display:flex;gap:18px;justify-content:space-between;flex-wrap:wrap;align-items:center}
+  /* --- preguntas frecuentes ------------------------------------------ */
+  .faq{display:grid;gap:12px;max-width:760px}
+  .faq details{background:#fff;border-radius:16px;box-shadow:var(--sombra);padding:0 20px}
+  .faq summary{cursor:pointer;list-style:none;font-weight:800;color:var(--verde-osc);padding:16px 30px 16px 0;position:relative}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:'+';position:absolute;right:0;top:50%;transform:translateY(-50%);
+    font-family:'Lilita One',sans-serif;font-size:1.5rem;color:var(--rojo)}
+  .faq details[open] summary::after{content:'\2212'}
+  .faq summary:focus-visible{outline:3px solid var(--sol);outline-offset:2px;border-radius:8px}
+  .faq details p{margin:0 0 16px;color:var(--tinta-2)}
+
+  /* --- resenas y galeria (ocultas mientras no haya material real) ----- */
+  .resenas{list-style:none;padding:0;margin:0}
+  .resenas .tarjeta p{font-size:1rem;color:var(--tinta)}
+  .resenas .tarjeta .quien{margin-top:10px;font-weight:800;color:var(--verde);font-size:.9rem}
+  .galeria{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;list-style:none;padding:0;margin:0}
+  .galeria img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:16px;display:block;box-shadow:var(--sombra)}
+
+  footer{background:var(--tinta);color:var(--crema-2);padding:34px 0 40px;font-size:.92rem}
+  footer .wrap{display:flex;gap:18px;justify-content:space-between;flex-wrap:wrap;align-items:flex-start}
+  footer .privacidad{flex-basis:100%;margin:6px 0 0;font-size:.84rem;color:#CDBFA8;max-width:70ch}
 
   @media (max-width:640px){
     section{padding:42px 0}
-    .barra{padding:13px 16px}
-    .barra a{width:100%;text-align:center}
+    .wrap{padding:0 16px}
+    .barra{padding:13px 16px;gap:10px 12px}
+    .barra .estado{min-width:0}
+    .barra #pedir{width:100%;text-align:center}
+    /* En el telefono el boton de consulta se acorta a «¿Dudas?» para caber
+       al lado del estado, y la ayuda del estado pierde sus ultimas palabras
+       para que la barra no crezca una linea. */
+    .barra .dudas{padding:7px 12px 7px 8px;font-size:.86rem}
+    .barra .largo{display:none}
   }
-  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}.carrusel{scroll-behavior:auto}}
 </style>
 </head>
 <body>
-
 
 <header class="hero">
   <div class="guirnalda"></div>
@@ -204,16 +264,26 @@
     <div class="titulo"><span class="n">01</span><h2>Elige tu juego</h2></div>
     <p class="intro">Antes de enamorarte de uno, mira el <b>espacio que necesita</b>. Es lo que
     más falla: el juego cabe en el patio, pero no queda lugar para que los niños se bajen.
-    <b>Puedes elegir más de uno</b> para el mismo día.</p>
+    <b>Puedes elegir hasta dos</b> para el mismo día.<span id="intro-juntos"></span></p>
     <ul class="juegos" id="juegos"></ul>
+  </div>
+</section>
+
+<!-- Galeria (C24). Oculta hasta que haya fotos nuevas de los juegos armados.
+     Dato a confirmar: fotos con autorizacion escrita del apoderado si sale algun nino. -->
+<section id="galeria" hidden>
+  <div class="wrap">
+    <div class="titulo"><h2>Así quedan armados</h2></div>
+    <ul class="galeria" id="galeria-lista"></ul>
   </div>
 </section>
 
 <section style="background:var(--crema-2)">
   <div class="wrap">
     <div class="titulo"><span class="n">02</span><h2>Elige el día</h2></div>
-    <p class="intro">Los días tachados ya están tomados. Los fines de semana se llenan primero,
-    así que mientras antes avises, mejor.</p>
+    <p class="intro">Los días tachados ya están tomados. Elige el tuyo aquí y te confirmamos por
+    WhatsApp. Reservamos con <b>al menos 2 días de anticipación</b>, y la fecha queda reservada
+    recién cuando pagas el abono.</p>
 
     <div class="cal-caja">
       <div class="cal-cab">
@@ -245,8 +315,18 @@
         <input id="f-nombre" type="text" autocomplete="name" placeholder="Tu nombre">
       </div>
       <div class="campo">
+        <span class="label" id="lbl-lugar">¿La fiesta es en la comuna de Pencahue?</span>
+        <div class="opciones" role="group" aria-labelledby="lbl-lugar">
+          <button type="button" data-g="lugar" data-v="comuna" aria-pressed="false">Sí, en la comuna</button>
+          <button type="button" data-g="lugar" data-v="fuera" aria-pressed="false">No, fuera de la comuna</button>
+        </div>
+        <p class="ayuda">Con esto te mostramos cuánto sale el traslado.</p>
+      </div>
+      <div class="campo">
         <label for="f-sector">¿En qué comuna o sector?</label>
-        <input id="f-sector" type="text" placeholder="Pencahue, Botalcura, Corinto…">
+        <input id="f-sector" type="text" placeholder="Pencahue, Figueroa, Batuco, Corinto…">
+        <p class="ayuda">El traslado sale $5.000 en sectores cercanos, como Figueroa, y $10.000
+        en Batuco o Corinto.</p>
       </div>
       <div class="campo">
         <label for="f-dir">Dirección y cómo llegar</label>
@@ -284,73 +364,304 @@
         <span class="icono">⏰</span>
         <h3>Son 6 horas</h3>
         <p>Coordinamos contigo la hora de entrega y la de retiro, según a qué hora parte
-        el cumpleaños. Puedes pedir <b>más de un juego</b> para el mismo día: alcanzamos a
-        instalar hasta dos.</p>
+        el cumpleaños: llegamos <b>al menos 1 hora antes</b>. Si lo usas menos horas, el
+        valor es el mismo. Puedes pedir <b>más de un juego</b> para el mismo día:
+        alcanzamos a instalar hasta dos.</p>
+      </div>
+      <div class="tarjeta">
+        <span class="icono">🧰</span>
+        <h3>Qué trae cada juego</h3>
+        <p>Cada juego va con su <b>turbo</b> (el motor que lo mantiene inflado), <b>cable
+        y sogas</b>. Lo llevamos, lo instalamos y lo retiramos nosotros.</p>
       </div>
       <div class="tarjeta">
         <span class="icono">🔌</span>
         <h3>¿No hay enchufe? Se resuelve</h3>
-        <p>El motor va conectado todo el rato. Si en el lugar no hay electricidad, llevamos
+        <p>El turbo va conectado todo el rato. Si en el lugar no hay electricidad, llevamos
         generador por <b>$20.000 más</b>. Avísanos al reservar.</p>
       </div>
       <div class="tarjeta">
         <span class="icono">🌱</span>
         <h3>Piso plano y despejado</h3>
-        <p>Pasto o cemento, da lo mismo. Lo que importa es que esté parejo y sin piedras
-        ni ramas.</p>
+        <p>Ideal pasto o cemento, parejo y sin piedras ni ramas, y que se pueda llegar
+        en vehículo hasta el lugar.</p>
       </div>
       <div class="tarjeta">
         <span class="icono">🚗</span>
         <h3>El traslado</h3>
-        <p>Dentro de la <b>comuna de Pencahue</b>, el traslado sale entre <b>$5.000 y
-        $10.000</b> según la distancia. Fuera de la comuna lo conversamos por WhatsApp.</p>
+        <p>En sectores cercanos, como <b>Figueroa</b>, el traslado sale <b>$5.000</b>. En
+        <b>Batuco o Corinto</b>, <b>$10.000</b>. Si tu sector es otro, o es fuera de la
+        comuna, escríbenos y te decimos cuánto sale.</p>
+      </div>
+      <div class="tarjeta">
+        <span class="icono">🧦</span>
+        <h3>Sin zapatos y con un adulto</h3>
+        <p>Se juega sin zapatos, ideal con calcetines antideslizantes y ropa adecuada para
+        no quemarse con el roce. Siempre con <b>un adulto a cargo</b>, y sin pasarse de los
+        niños que caben en cada juego.</p>
       </div>
     </div>
 
     <div class="clave">
-      <h3>El cupo se asegura con el abono</h3>
-      <p>Mientras no esté el abono, la fecha sigue disponible para otra persona. No es por
-      desconfianza: es la única forma de que quien reserve de verdad tenga su día seguro.</p>
-      <p>El abono se descuenta del total. El resto se paga el día del evento.</p>
-      <p class="lluvia"><b>¿Y si llueve?</b> Si el día amanece con lluvia y prefieren no hacerlo,
-      <b>se devuelve el abono completo</b>. No pierden nada.</p>
+      <h3>La fecha se reserva con el abono</h3>
+      <p>Primero te confirmamos por WhatsApp que tu fecha está libre. Desde ahí tienes
+      <b>hasta 2 días para pagar el abono</b>, y la fecha queda reservada recién cuando lo
+      pagas: mientras tanto sigue disponible para otra persona. Si pasan los 2 días sin
+      abono, la reserva no se hace.</p>
+      <p>No es por desconfianza: es la única forma de que quien reserve de verdad tenga su
+      día seguro.</p>
+      <p>El abono se descuenta del total y el resto se paga al terminar el arriendo. No
+      pedimos garantía.</p>
+      <p>Puedes pagar <b>por transferencia o en efectivo</b>. Los datos para transferir te
+      los damos por WhatsApp.</p>
+      <!-- Confirmado por la duena (cuestionario del 21-nov, audio y textos del 21 y
+           22-nov): solo se reserva con el abono pagado, maximo 2 dias para pagarlo;
+           saldo al terminar; transferencia o efectivo; sin garantia; la lluvia devuelve
+           el abono y la decide principalmente el cliente; cancelar por otro motivo no lo
+           devuelve, pero se puede reagendar; el viento solo suspende si es muy fuerte.
+           Datos a confirmar, NO se publican: si el efectivo sirve tambien para el abono
+           y si los precios llevan IVA aparte.
+           Los datos bancarios NUNCA van en la pagina: los da la duena por WhatsApp. -->
+      <p class="lluvia"><b>¿Y si llueve?</b> Tú decides: si el día amanece con lluvia y prefieren
+      no hacerlo, <b>se devuelve el abono completo</b>. Si se cancela por otro motivo, el
+      abono no se devuelve, pero <b>puedes reagendar</b> para otra fecha. <b>¿Y si hay
+      viento?</b> Se instala igual: solo se suspende si es muy fuerte.</p>
     </div>
   </div>
 </section>
 
-<div class="barra">
-  <div class="estado" id="estado">Elige un juego y una fecha<small>Con eso te armamos el mensaje listo para enviar</small></div>
+<section style="background:var(--crema-2)">
+  <div class="wrap">
+    <div class="titulo"><span class="n">05</span><h2>Preguntas frecuentes</h2></div>
+    <div class="faq">
+      <details>
+        <summary>¿Cuánto dura el arriendo?</summary>
+        <p>Son 6 horas. Coordinamos contigo la hora de entrega y la de retiro según a qué hora
+        parte el cumpleaños. No hay tarifa por hora extra: si necesitas que se quede un rato
+        más, pregúntanos por WhatsApp.</p>
+      </details>
+      <details>
+        <summary>¿Sale más barato si lo uso menos horas?</summary>
+        <p>No. No hay arriendo por menos horas: el valor es el mismo aunque lo uses menos de 6.</p>
+      </details>
+      <details>
+        <summary>¿A qué hora llegan a instalarlo?</summary>
+        <p>A la hora que nos pidas: llegamos al menos 1 hora antes de que parta el cumpleaños.
+        Armarlo toma entre 30 y 60 minutos. Lo instalamos y lo retiramos nosotros.</p>
+      </details>
+      <details>
+        <summary>¿Qué trae cada juego?</summary>
+        <p>Cada juego va con su turbo (el motor que lo mantiene inflado), cable y sogas.</p>
+      </details>
+      <details>
+        <summary>¿Con cuánta anticipación reservo?</summary>
+        <p>Con al menos 2 días de anticipación. Arrendamos todos los días. Elige el día en el
+        calendario de esta página y te confirmamos por WhatsApp.</p>
+      </details>
+      <details>
+        <summary>¿Cómo reservo la fecha?</summary>
+        <p>Eliges el juego y el día aquí y nos escribes por WhatsApp. Cuando te confirmamos que
+        la fecha está libre, tienes hasta 2 días para pagar el abono. La fecha queda reservada
+        recién cuando lo pagas: mientras tanto sigue disponible para otra persona, y si pasan
+        los 2 días sin abono la reserva no se hace.</p>
+      </details>
+      <details>
+        <summary>¿Cómo se paga?</summary>
+        <p>Por transferencia o en efectivo. El abono se descuenta del total y el resto se paga
+        al terminar el arriendo. No pedimos garantía.</p>
+      </details>
+      <details>
+        <summary>¿Y si llueve?</summary>
+        <p>Tú decides. Si el día amanece con lluvia y prefieren no hacerlo, se devuelve el abono
+        completo.</p>
+      </details>
+      <details>
+        <summary>¿Y si hay viento?</summary>
+        <p>Se instala igual. Solo se suspende si el viento es muy fuerte.</p>
+      </details>
+      <details>
+        <summary>¿Y si cancelo por otro motivo?</summary>
+        <p>En ese caso el abono no se devuelve, pero puedes reagendar para otra fecha. El abono
+        solo se devuelve si llueve.</p>
+      </details>
+      <details>
+        <summary>No tengo enchufe, ¿se puede igual?</summary>
+        <p>Sí. Llevamos generador por $20.000 más. Avísanos al reservar.</p>
+      </details>
+      <details>
+        <summary>¿Cuánto sale el traslado?</summary>
+        <p>$5.000 en sectores cercanos, como Figueroa, y $10.000 en Batuco o Corinto. Si tu
+        sector es otro, te lo confirmamos por WhatsApp.</p>
+      </details>
+      <details>
+        <summary>Vivo fuera de la comuna</summary>
+        <p>Escríbenos por WhatsApp con la dirección y te decimos si podemos llegar y cuánto sale
+        el traslado.</p>
+      </details>
+      <details>
+        <summary>¿Qué necesita el patio?</summary>
+        <p>Piso parejo, ideal pasto o cemento, sin piedras ni ramas, espacio libre con 1&nbsp;m de
+        holgura por lado y que se pueda llegar en vehículo. Nada encima: ni cables ni
+        techo.<span id="faq-alturas"></span> Si tienes dudas, mándanos por WhatsApp una foto del
+        lugar y una medida aproximada.</p>
+      </details>
+      <details>
+        <summary>¿Qué hay que cuidar mientras juegan?</summary>
+        <p>Que jueguen sin zapatos, ideal con calcetines antideslizantes y con ropa adecuada para
+        no quemarse con el roce, y siempre con un adulto a cargo. Y que no se suban más niños de
+        los que caben en cada juego: está en la ficha de cada uno.</p>
+      </details>
+      <details>
+        <summary>¿Alguien se queda durante el evento?</summary>
+        <p>Lo instalamos y volvemos a retirarlo al terminar. Si necesitas que alguien se quede,
+        pregúntanos por WhatsApp.</p>
+      </details>
+      <details>
+        <summary>¿Puedo pedir dos juegos el mismo día?</summary>
+        <p>Sí, hasta dos por día.<span id="faq-juntos"></span></p>
+      </details>
+      <details>
+        <summary>¿En qué horario responden?</summary>
+        <p>Por WhatsApp, de 08:00 a 22:00.</p>
+      </details>
+      <!-- Respuestas de la duena (cuestionario del 21-nov, audio y textos del 21 y
+           22-nov): son 6 horas, sin arriendo por menos horas ni tarifa por hora extra;
+           llegada 1 h antes y armado de 30 a 60 min; ella monta y desmonta; cada juego
+           va con turbo, cable y sogas; 2 dias de anticipacion; todos los dias; solo se
+           reserva con el abono pagado, maximo 2 dias; saldo al terminar; transferencia
+           o efectivo; sin garantia; la lluvia devuelve el abono y decide el cliente; el
+           viento solo si es muy fuerte; cancelar por otro motivo no devuelve el abono,
+           pero se puede reagendar; traslado 5.000 en sectores cercanos (Figueroa) y
+           10.000 en Batuco o Corinto; los 2 inflables juntos, o el grande con la mesa,
+           en 100.000; pasto o cemento con acceso de vehiculo; sin zapatos y con un
+           adulto a cargo; monitor solo si se pide; atiende de 08:00 a 22:00.
+           Datos a confirmar, NO se publican: precio del monitor; IVA; si el traslado se
+           cobra por viaje o por juego cuando van dos; el abono cuando se llevan dos
+           juntos; si el efectivo sirve tambien para el abono. -->
+    </div>
+  </div>
+</section>
+
+<!-- Resenas (C25). Se muestran solo si el puente manda resenas reales con
+     permiso de la persona (campo `resenas`: [{texto, nombre}]). Nunca inventadas. -->
+<section id="resenas" hidden>
+  <div class="wrap">
+    <div class="titulo"><h2>Lo que nos dicen</h2></div>
+    <ul class="tarjetas resenas" id="resenas-lista"></ul>
+  </div>
+</section>
+
+<div class="barra" id="barra">
+  <div class="estado" id="estado" aria-live="polite">Elige un juego y una fecha<small>Con eso te armamos el mensaje listo para enviar</small></div>
+  <a class="dudas" id="dudas" href="#" aria-label="¿Dudas? Escríbenos por WhatsApp">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#66BB4A"/><path d="M7 8.2h10a1.3 1.3 0 0 1 1.3 1.3v5a1.3 1.3 0 0 1-1.3 1.3h-5.2L8.6 18.4v-2.6H7a1.3 1.3 0 0 1-1.3-1.3v-5A1.3 1.3 0 0 1 7 8.2z" fill="#fff"/></svg>
+    <span>¿Dudas?<span class="largo"> Escríbenos</span></span>
+  </a>
   <a id="pedir" href="#" aria-disabled="true">Reservar por WhatsApp</a>
+  <p class="listo" id="listo" role="status" hidden></p>
 </div>
 
 <footer>
   <div class="wrap">
-    <div><b>Mundo Mágico Pencahue</b> · Juegos inflables para cumpleaños</div>
+    <div><b>Mundo Mágico Pencahue</b><br>Juegos inflables para cumpleaños</div>
     <div id="pie-fecha"></div>
+    <div>Arrendamos todos los días.<br>Respondemos por WhatsApp de 08:00 a 22:00.</div>
+    <!-- Dato a confirmar (C27): enlace a la pagina de Facebook del negocio (es la unica
+         red que usa), cuando este su direccion. -->
+    <p class="privacidad">Esta página no guarda lo que escribes ni lo envía a ningún servidor:
+    solo arma el mensaje de WhatsApp, y tú decides si lo mandas.</p>
+    <!-- Dato a confirmar (C29), texto por aprobar con la duena antes de publicarlo:
+         "Lo que nos mandes por WhatsApp lo usamos solo para coordinar tu arriendo.
+         Si quieres que lo borremos, pidelo por el mismo chat." -->
   </div>
 </footer>
 
 <script>
 (function(){
-  /* Aqui los datos se piden al puente. Apps Script responde con las
-     cabeceras que permiten leerlo desde otro sitio, que es el mismo
-     patron que ya usa la tienda de ropa del gimnasio. */
+  /* Los datos se piden al puente de Apps Script, que responde con las
+     cabeceras que permiten leerlo desde otro sitio. */
   var API = 'https://script.google.com/macros/s/AKfycbzjgieXuiFC3tLCTBbzmaZq8J5g5GQ5fsG_ZLwQQhScrq5w9tUuTOCcG9qaZBwxYC1G/exec?tipo=datos';
   var MEM = 'mm_ultimo_v1';
   var D = { juegos: [], diasLlenos: [], ocupados: {} };
 
+  /* El unico numero de WhatsApp de la pagina (el mismo va en gracias/index.html).
+     Nunca se lee un numero de la direccion: eso permitiria desviar pedidos. Las
+     pruebas se hacen con un servidor local que cambia este numero al servir la
+     pagina; nada de eso vive en este repositorio. */
   var WSP = '56997977749';          // +56 9 9797 7749
 
-  var JUEGOS = [], LLENOS = [], POR_JUEGO = {};
+  /* Los tres juegos de hoy, por su id en Notion (sin guiones). Sirven para las
+     fotos de respaldo y para el precio por llevar dos juntos. */
+  var ID = {
+    mega:     '3d33c26e4b788116940ffb435e96a356',
+    amarillo: '3d33c26e4b7881f18524d802ac402a89',
+    mesa:     '3d33c26e4b7881ac86feecf5b634de83'
+  };
+
+  /* Condiciones que la pagina usa para estimar. Solo van las confirmadas por
+     la duena (cuestionario del 21-nov, audio y textos del 21 y 22-nov).
+     Datos a confirmar, que NO se usan: si el traslado se cobra por viaje o por
+     juego cuando van dos (se suma una vez); el abono cuando se llevan dos
+     juntos (se muestra la suma de los abonos de cada juego); cuanto sale el
+     traslado en los sectores que ella no nombro (se muestran los dos valores). */
+  var COND = {
+    trasladoComuna: [5000, 10000],   // dentro de la comuna: 5.000 o 10.000 segun el sector
+    /* Sectores que la duena nombro con su valor. Se buscan en lo que la persona
+       escribe en «comuna o sector»; si no calza ninguno, o calzan de los dos
+       valores, el estimado muestra los dos. */
+    sectores: [
+      { valor: 5000,  nombres: ['Figueroa'] },
+      { valor: 10000, nombres: ['Batuco', 'Corinto'] }
+    ],
+    generador: 20000,                // si no hay electricidad en el lugar
+    anticipacion: 2                  // dias minimos para reservar
+  };
+
+  /* Precio por llevar dos juegos juntos: los dos inflables, o el inflable
+     grande con la mesa, quedan en 100.000 (duena, 21-nov). Solo esas dos
+     combinaciones; cualquier otra suma los precios de cada juego. */
+  var JUNTOS = [
+    { ids: [ID.mega, ID.amarillo], precio: 100000 },
+    { ids: [ID.mega, ID.mesa],     precio: 100000 }
+  ];
+
+  /* Por donde llego la persona, desde la direccion: ?c=ig, fb, tt, wa, qr o rec.
+     Sirve para saber que canal trae pedidos. Nada mas se lee de la direccion:
+     un parametro que cambiara el numero de WhatsApp permitiria desviar pedidos. */
+  var CANALES = {
+    ig: 'llegué desde Instagram', fb: 'llegué desde Facebook', tt: 'llegué desde TikTok',
+    wa: 'llegué desde un Estado de WhatsApp', qr: 'llegué por el código QR', rec: 'llegué por una recomendación'
+  };
+  var canal = (function(){
+    var m = /[?&]c=([a-z]+)/i.exec(location.search || '');
+    return m ? (CANALES[m[1].toLowerCase()] || '') : '';
+  })();
+
+  /* Fotos de respaldo guardadas en el repo. Las URL de Notion caducan a la
+     hora: cuando llega una vencida, mejor una foto estable que una tarjeta
+     sin foto. Se buscan por el id del juego en Notion (sin guiones). Solo
+     fotos propias: la mesa de air hockey no tiene copia porque su foto es de
+     catalogo (sin respaldo, la tarjeta dice «Sin foto todavia»). */
+  var RESPALDO = {};
+  RESPALDO[ID.mega] = 'fotos/mega-inflable.jpg';
+  RESPALDO[ID.amarillo] = 'fotos/amarillo-verde.jpg';
+
+  /* Galeria (C24): vacia a proposito. Cada foto, { src:'fotos/archivo.jpg', alt:'...' }.
+     Dato a confirmar: fotos nuevas de juegos armados y autorizacion escrita si sale un nino. */
+  var GALERIA = [];
+
+  /* Notion guarda «Tobogan» sin tilde; se corrige solo al mostrarlo, para
+     no renombrar la opcion (el puente la busca por su nombre exacto). */
+  var TILDES = { 'tobogan': 'Tobogán', 'combo con tobogan': 'Combo con tobogán' };
+
+  var JUEGOS = [], LLENOS = [], POR_JUEGO = {}, MAXDIA = 2;
   /* Hasta que llegue una respuesta buena no se sabe nada. Es distinto de
      «no hay dias tomados»: sin esto el calendario pinta todo libre y deja
      pedir un dia que puede estar ocupado. */
-  var sinDatos = true;
+  var sinDatos = true, comprobando = true;
   /* Ultimo dia que trae el puente. Mas alla no sabe nada, asi que la
-     pagina no puede decir «libre». Si el puente todavia no lo manda —por
-     ejemplo si se publica la pagina antes que el puente— se usa el mismo
-     medio ano que el puente trae configurado, para no volver al error de
-     pintar libres unos dias que nadie ha mirado. */
+     pagina no puede decir «libre». Si el puente no lo manda se usa el
+     mismo medio ano que el puente trae configurado. */
   var HASTA = '';
   function topePorDefecto(){
     return iso(new Date(hoy.getFullYear(), hoy.getMonth() + 6, 0));
@@ -358,10 +669,9 @@
 
   var $ = function(id){ return document.getElementById(id); };
 
-  /* Lo que la persona cuenta de su fiesta. Antes esto iban seis lineas en
-     blanco dentro del mensaje, esperando que las rellenara en WhatsApp; en
-     el telefono nadie lo hace y a Yocy le llegaban seis etiquetas vacias.
-     Ahora se pregunta aqui, y lo que quede vacio no se manda.
+  /* Lo que la persona cuenta de su fiesta. Se pregunta aqui y lo que quede
+     vacio no se manda: una lista de etiquetas en blanco dentro del mensaje
+     no la llena nadie desde el telefono.
      Nada de esto se guarda ni se envia a ninguna parte: solo arma el texto
      del mensaje de WhatsApp que la persona decide enviar. */
   var CAMPOS = [
@@ -374,25 +684,161 @@
     { clave:'enchufe', linea:'🔌 ¿Hay enchufe cerca? ' },
     { clave:'piso',    linea:'🌱 El piso es de: ' }
   ];
-  var extra = { nombre:'', sector:'', dir:'', hora:'', enchufe:'', piso:'' };
-  /* Se pueden elegir varios juegos para el mismo dia: Diego confirmo el
-     6-sep-2026 que el tope son juegos, no reservas, y que una persona
-     puede pedir uno, dos o todos. Antes esto era un solo id y tocar el
-     segundo juego soltaba el primero, sin decirlo. */
+  var extra = { nombre:'', sector:'', dir:'', hora:'', lugar:'', enchufe:'', piso:'' };
+  /* Se pueden elegir varios juegos para el mismo dia (confirmado el
+     6-sep-2026: el tope son juegos, no reservas). Lo que se acaba es la
+     capacidad de instalar: MAXDIA juegos por dia, contando los que ya estan
+     tomados ese dia. */
   var elegidos = [], fecha = null;
   function estaElegido(id){ return elegidos.indexOf(id) !== -1; }
-  function juegosElegidos(){
-    return elegidos.map(function(id){
-      for (var i=0;i<JUEGOS.length;i++) if (JUEGOS[i].id === id) return JUEGOS[i];
-      return null;
-    }).filter(Boolean);
+  function sinGuiones(id){ return String(id || '').replace(/-/g, ''); }
+  function juegoPorId(id){
+    var k = sinGuiones(id);
+    for (var i=0;i<JUEGOS.length;i++) if (sinGuiones(JUEGOS[i].id) === k) return JUEGOS[i];
+    return null;
   }
+  function juegosElegidos(){ return elegidos.map(juegoPorId).filter(Boolean); }
   var hoy = new Date(); hoy.setHours(0,0,0,0);
   var verMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  /* Primer dia que se puede pedir desde la pagina: hoy + la anticipacion. */
+  var minimo = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + COND.anticipacion);
 
   function clp(n){ return '$' + Number(n||0).toLocaleString('es-CL'); }
+  function rango(a, b){ return a === b ? clp(a) : clp(a) + ' a ' + clp(b); }
+  /* El traslado no es un rango: es uno de los dos valores. */
+  function oUno(a, b){ return a === b ? clp(a) : clp(a) + ' o ' + clp(b); }
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function iso(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+  /* El punto medio no se usa en textos visibles: si viene desde Notion (por
+     ejemplo en Medidas) se muestra como coma. */
+  function limpio(s){ return String(s==null?'':s).replace(/\s*\u00B7\s*/g, ', '); }
+  function tipoBonito(t){ var k = String(t||'').trim().toLowerCase(); return TILDES[k] || t; }
+  function cuantos(n){ return n === 1 ? 'un juego' : ({2:'dos',3:'tres',4:'cuatro'}[n] || n) + ' juegos'; }
+  /* «a», «a o b», «a, b o c». */
+  function lista(l, y){ return l.length < 2 ? (l[0] || '') : l.slice(0, -1).join(', ') + ' ' + y + ' ' + l[l.length-1]; }
+  /* Minusculas y sin tildes, para comparar lo que la persona escribe. */
+  function plano(s){
+    return String(s == null ? '' : s).toLowerCase()
+      .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i')
+      .replace(/[óòö]/g,'o').replace(/[úùü]/g,'u');
+  }
+
+  /* --- llevar dos juntos ---------------------------------------------- */
+  /* Vale solo para las combinaciones de JUNTOS, y solo si de verdad sale
+     menos que la suma: si un precio cambia en Notion y la suma queda igual o
+     mas baja, no se ofrece nada. */
+  function juntoDe(a, b){
+    if (!a || !b) return null;
+    var ka = sinGuiones(a.id), kb = sinGuiones(b.id);
+    for (var i=0;i<JUNTOS.length;i++){
+      var ids = JUNTOS[i].ids;
+      if ((ids[0] === ka && ids[1] === kb) || (ids[0] === kb && ids[1] === ka)){
+        var suma = (Number(a.precio)||0) + (Number(b.precio)||0);
+        return JUNTOS[i].precio < suma ? { precio: JUNTOS[i].precio, suma: suma } : null;
+      }
+    }
+    return null;
+  }
+  /* Con que otros juegos del catalogo de hoy sale menos llevar este,
+     agrupados por precio: [{ precio, nombres:[...] }]. */
+  function parejasDe(j){
+    var l = [];
+    JUEGOS.forEach(function(o){
+      if (sinGuiones(o.id) === sinGuiones(j.id)) return;
+      var p = juntoDe(j, o);
+      if (!p) return;
+      for (var i=0;i<l.length;i++) if (l[i].precio === p.precio){ l[i].nombres.push(o.nombre); return; }
+      l.push({ precio: p.precio, nombres: [o.nombre] });
+    });
+    return l;
+  }
+
+  /* --- traslado por sector --------------------------------------------- */
+  /* Si lo que la persona escribio nombra un sector con valor conocido, el
+     traslado es ese valor; si no, los dos valores posibles. */
+  function trasladoDe(texto){
+    var t = ' ' + plano(texto).replace(/[^a-z0-9]+/g, ' ') + ' ';
+    var valores = [], nombre = '';
+    COND.sectores.forEach(function(s){
+      s.nombres.forEach(function(n){
+        if (t.indexOf(' ' + plano(n) + ' ') === -1) return;
+        if (valores.indexOf(s.valor) === -1) valores.push(s.valor);
+        if (!nombre) nombre = n;
+      });
+    });
+    if (valores.length === 1) return { min: valores[0], max: valores[0], sector: nombre };
+    return { min: COND.trasladoComuna[0], max: COND.trasladoComuna[1], sector: '' };
+  }
+
+  /* --- cupos por dia -------------------------------------------------- */
+  /* Un juego cuenta para el cupo salvo que el puente diga ocupaCupo:false
+     (preparado para C26; hoy el puente no lo manda y todos cuentan). */
+  function ocupaCupo(j){ return !j || j.ocupaCupo !== false; }
+  function tomadoEse(id, s){ return (POR_JUEGO[sinGuiones(id)] || []).indexOf(s) !== -1; }
+  /* Juegos ya comprometidos ese dia. El puente nuevo manda `usados`; con el
+     puente de antes se cuentan los juegos distintos que tienen esa fecha en
+     `ocupados` (incluye juegos que ya no estan a la venta: igual ocupan). */
+  function usadosEn(s){
+    if (D.usados && typeof D.usados === 'object') return Number(D.usados[s]) || 0;
+    var n = 0;
+    for (var id in POR_JUEGO){
+      if (!Object.prototype.hasOwnProperty.call(POR_JUEGO, id)) continue;
+      if ((POR_JUEGO[id] || []).indexOf(s) === -1) continue;
+      if (ocupaCupo(juegoPorId(id))) n++;
+    }
+    return n;
+  }
+  function cuposElegidos(){ return juegosElegidos().filter(ocupaCupo).length; }
+
+  /* Una fecha no sirve si el dia esta cerrado del todo, si ALGUNO de los
+     juegos elegidos ya esta comprometido ese dia, o si con los elegidos se
+     pasa del tope de instalaciones. Sin juego elegido solo se tachan los
+     dias cerrados: es mas honesto que tachar de mas. */
+  function noDisponible(s){
+    if (LLENOS.indexOf(s) !== -1) return true;
+    for (var i=0;i<elegidos.length;i++) if (tomadoEse(elegidos[i], s)) return true;
+    if (elegidos.length && usadosEn(s) + cuposElegidos() > MAXDIA) return true;
+    return false;
+  }
+
+  /* Por que un juego no se puede sumar ahora. Vacio = se puede. */
+  function motivoNo(j){
+    if (estaElegido(j.id)) return '';
+    var suma = ocupaCupo(j) ? 1 : 0;
+    if (suma && cuposElegidos() + 1 > MAXDIA)
+      return 'Alcanzamos a instalar hasta ' + cuantos(MAXDIA) + ' por día.';
+    if (fecha){
+      if (tomadoEse(j.id, fecha)) return 'Este juego ya está tomado el día que elegiste.';
+      if (suma && usadosEn(fecha) + cuposElegidos() + 1 > MAXDIA)
+        return 'El día que elegiste ya no tiene cupo para otro juego.';
+    }
+    return '';
+  }
+
+  /* --- juegos --------------------------------------------------------- */
+  /* Fotos que ya fallaron en esta visita: al volver a pintar las tarjetas
+     (cada vez que se elige algo) no se vuelven a pedir. */
+  var ROTAS = {};
+  function respaldo(j){ var r = RESPALDO[sinGuiones(j.id)] || ''; return ROTAS[r] ? '' : r; }
+  function fotosDe(j){
+    var l = [];
+    (Array.isArray(j.fotos) ? j.fotos : []).forEach(function(u){ if (u && l.indexOf(u) === -1) l.push(u); });
+    if (j.foto && l.indexOf(j.foto) === -1) l.unshift(j.foto);
+    return l.filter(function(u){ return !ROTAS[u]; });
+  }
+  function htmlFoto(j){
+    var l = fotosDe(j), r = respaldo(j), alt = esc(j.nombre);
+    if (!l.length){
+      return r ? '<img src="' + esc(r) + '" alt="' + alt + '" loading="lazy">'
+               : '<div class="sinfoto">Sin foto todavía</div>';
+    }
+    var imgs = l.map(function(u, i){
+      return '<img src="' + esc(u) + '" alt="' + alt + (l.length > 1 ? ', foto ' + (i+1) : '') + '" loading="lazy"' +
+        (i === 0 && r ? ' data-r="' + esc(r) + '"' : '') + '>';
+    }).join('');
+    if (l.length === 1) return imgs;
+    return '<div class="carrusel">' + imgs + '</div><span class="mas">' + l.length + ' fotos, desliza</span>';
+  }
 
   function pintarJuegos(){
     if (!JUEGOS.length){
@@ -401,59 +847,118 @@
       return;
     }
     $('juegos').innerHTML = JUEGOS.map(function(j){
-      var on = estaElegido(j.id);
-      /* Diego pidio no mencionar la medida de la mesa de air hockey.
-         La regla general: si el campo Medidas viene vacio en Notion, esa
-         fila no se muestra, en vez de salir con un hueco. */
+      var on = estaElegido(j.id), porque = motivoNo(j), tipo = tipoBonito(j.tipo);
+      /* Si el campo Medidas viene vacio en Notion, esa fila no se muestra
+         (la mesa de air hockey va sin medidas a proposito). */
       var filas = '';
-      if (j.medidas) filas += '<dt>Mide</dt><dd>' + esc(j.medidas) + '</dd>';
-      if (j.superficie) filas += '<dt>Necesita</dt><dd>' + esc(j.superficie) + '</dd>';
+      if (j.medidas) filas += '<dt>Mide</dt><dd>' + esc(limpio(j.medidas)) + '</dd>';
+      if (j.superficie) filas += '<dt>Necesita</dt><dd>' + esc(limpio(j.superficie)) + '</dd>';
       if (j.ninos) filas += '<dt>Caben</dt><dd>' + esc(j.ninos) + ' niños de 45 kg</dd>';
-      else if (j.edad) filas += '<dt>Edad</dt><dd>' + esc(j.edad) + '</dd>';
+      else if (j.edad) filas += '<dt>Edad</dt><dd>' + esc(limpio(j.edad)) + '</dd>';
+      var idp = 'porque-' + sinGuiones(j.id);
+      /* Con que otro juego sale menos: «Los dos juntos, $100.000: con X o con Y.» */
+      var junto = parejasDe(j).map(function(p){
+        return '<p class="junto">Los dos juntos, ' + clp(p.precio) + ': con ' +
+          esc(lista(p.nombres, 'o con')) + '.</p>';
+      }).join('');
 
       return '<li class="juego' + (on?' elegido':'') + '">' +
-        '<div class="foto">' + (j.tipo ? '<span class="cinta">' + esc(j.tipo) + '</span>' : '') +
-          (j.foto ? '<img src="' + esc(j.foto) + '" alt="' + esc(j.nombre) + '" loading="lazy">'
-                  : '<div class="sinfoto">Sin foto todavía</div>') + '</div>' +
+        '<div class="foto">' + (tipo ? '<span class="cinta">' + esc(tipo) + '</span>' : '') + htmlFoto(j) + '</div>' +
         '<div class="cuerpo">' +
           '<h3>' + esc(j.nombre) + '</h3>' +
           (filas ? '<dl class="ficha">' + filas + '</dl>' : '') +
           '<div class="plata"><span class="valor">' + clp(j.precio) + '</span>' +
             (j.abono ? '<span class="abono">Abono <b>' + clp(j.abono) + '</b></span>' : '') +
           '</div>' +
-          '<button type="button" data-j="' + esc(j.id) + '">' + (on?'✓ Elegido':'Lo quiero') + '</button>' +
+          junto +
+          '<button type="button" data-j="' + esc(j.id) + '"' +
+            (porque ? ' disabled aria-describedby="' + idp + '"' : '') + '>' + (on?'✓ Elegido':'Lo quiero') + '</button>' +
+          (porque ? '<p class="porque" id="' + idp + '">' + esc(porque) + '</p>' : '') +
         '</div></li>';
     }).join('');
 
-    /* Las URL de foto que da Notion caducan a la hora. Llegan vencidas por
-       dos caminos: la copia guardada en este navegador y el respaldo de 6 h
-       del puente. Un icono de imagen rota se ve peor que no tener foto. */
+    /* Una foto vencida pasa primero a la de respaldo; si tampoco hay, la
+       tarjeta dice «Sin foto todavia» en vez de mostrar un icono roto. En un
+       carrusel, la foto que falla simplemente se quita. */
     Array.prototype.forEach.call($('juegos').querySelectorAll('img'), function(im){
       im.addEventListener('error', function(){
+        ROTAS[im.getAttribute('src')] = true;
         if (!im.parentNode) return;
+        var r = im.getAttribute('data-r');
+        if (r){ im.removeAttribute('data-r'); im.src = r; return; }
+        var car = im.parentNode.classList && im.parentNode.classList.contains('carrusel') ? im.parentNode : null;
+        if (car && car.querySelectorAll('img').length > 1){
+          car.removeChild(im);
+          var mas = car.parentNode.querySelector('.mas');
+          var n = car.querySelectorAll('img').length;
+          if (mas) { if (n > 1) mas.textContent = n + ' fotos, desliza'; else mas.parentNode.removeChild(mas); }
+          return;
+        }
+        var caja = car ? car.parentNode : im.parentNode;
         var aviso = document.createElement('div');
         aviso.className = 'sinfoto';
         aviso.textContent = 'Sin foto todavía';
-        im.parentNode.replaceChild(aviso, im);
+        if (car){ var m2 = caja.querySelector('.mas'); if (m2) caja.removeChild(m2); caja.replaceChild(aviso, car); }
+        else caja.replaceChild(aviso, im);
       });
     });
+    pintarAlturas();
+    pintarJuntos();
   }
 
-  /* Una fecha no sirve si el dia esta cerrado del todo, o si ALGUNO de los
-     juegos elegidos ya esta comprometido ese dia. Sin juego elegido solo se
-     tachan los dias cerrados: es mas honesto que tachar de mas. */
-  function noDisponible(s){
-    if (LLENOS.indexOf(s) !== -1) return true;
-    for (var i=0;i<elegidos.length;i++){
-      var f = POR_JUEGO[String(elegidos[i]).replace(/-/g,'')] || [];
-      if (f.indexOf(s) !== -1) return true;
+  /* El precio por llevar dos juntos, en la introduccion y en la pregunta
+     frecuente. Sale de JUNTOS y de los juegos que hoy estan a la venta: si
+     uno se oculta en Notion, su combinacion deja de ofrecerse sola. */
+  function pintarJuntos(){
+    var pares = [];
+    for (var i=0;i<JUEGOS.length;i++) for (var k=i+1;k<JUEGOS.length;k++){
+      var p = juntoDe(JUEGOS[i], JUEGOS[k]);
+      if (p) pares.push(JUEGOS[i].nombre + ' con ' + JUEGOS[k].nombre + ', ' + clp(p.precio) + ' los dos');
     }
-    return false;
+    var intro = $('intro-juntos'), faq = $('faq-juntos');
+    if (intro) intro.textContent = pares.length ? ' Algunos salen menos si los llevas juntos: lo dice cada tarjeta.' : '';
+    if (faq) faq.textContent = pares.length ? ' Y juntos salen menos: ' + pares.join('; ') + '.' : '';
   }
 
+  /* En la pregunta del patio, la altura de cada juego sale de Notion. */
+  function pintarAlturas(){
+    var el = $('faq-alturas');
+    if (!el) return;
+    var l = [];
+    JUEGOS.forEach(function(j){
+      var m = /(\d+(?:[.,]\d+)?)\s*m de alto/i.exec(j.medidas || '');
+      if (m) l.push(j.nombre + ' mide ' + m[1] + '\u00a0m de alto');
+    });
+    el.textContent = l.length ? ' Ojo con la altura: ' +
+      (l.length === 1 ? l[0] : l.slice(0, -1).join(', ') + ' y ' + l[l.length-1]) + '.' : '';
+  }
+
+  function pintarGaleria(){
+    if (!GALERIA.length) return;
+    $('galeria-lista').innerHTML = GALERIA.map(function(g){
+      return '<li><img src="' + esc(g.src) + '" alt="' + esc(g.alt || 'Juego armado') + '" loading="lazy"></li>';
+    }).join('');
+    $('galeria').hidden = false;
+  }
+
+  /* Solo resenas reales que la persona autorizo publicar, con el nombre que
+     ella eligio. Si no hay ninguna, la seccion no aparece. */
+  function pintarResenas(){
+    var r = (Array.isArray(D.resenas) ? D.resenas : []).filter(function(x){ return x && x.texto; }).slice(0, 12);
+    if (!r.length){ $('resenas').hidden = true; return; }
+    $('resenas-lista').innerHTML = r.map(function(x){
+      return '<li class="tarjeta"><p>«' + esc(x.texto) + '»</p>' +
+        (x.nombre ? '<p class="quien">' + esc(x.nombre) + '</p>' : '') + '</li>';
+    }).join('');
+    $('resenas').hidden = false;
+  }
+
+  /* --- calendario ----------------------------------------------------- */
   function pintarCal(){
     var y = verMes.getFullYear(), m = verMes.getMonth();
-    $('mes').textContent = verMes.toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+    /* «Noviembre de 2026»: mayuscula solo en la primera letra. */
+    var nombreMes = verMes.toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+    $('mes').textContent = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
     var hueco = (new Date(y,m,1).getDay() + 6) % 7;   // la semana parte el lunes
     var largo = new Date(y,m+1,0).getDate();
     var html = '';
@@ -461,14 +966,17 @@
     var lejos = false;
     for (var d=1; d<=largo; d++){
       var fd = new Date(y,m,d), s = iso(fd);
-      var pasado = fd < hoy, ocupado = noDisponible(s);
+      var pasado = fd < hoy, ocupado = !pasado && noDisponible(s);
+      /* Hoy y manana no se piden desde la pagina: la duena reserva con al
+         menos 2 dias de anticipacion. Quien apure, escribe por WhatsApp. */
+      var pronto = !pasado && fd < minimo;
       /* Fuera de lo que el puente alcanza a ver: ni «libre» ni «tomado».
          Se deja apagado y se explica abajo, en vez de mentir con el color. */
       var ciego = !pasado && (sinDatos || (HASTA && s > HASTA));
       if (ciego) lejos = true;
-      html += '<button type="button" class="dia'+(pasado?' pasado':'')+(ocupado?' ocupado':'')+(fecha===s?' elegido':'')+'"'+
-              ' data-f="'+s+'"'+(pasado||ocupado||ciego?' disabled':'')+
-              ' aria-label="'+d+' de '+verMes.toLocaleDateString('es-CL',{month:'long'})+(ocupado?', ya tomado':'')+'">'+d+'</button>';
+      html += '<button type="button" class="dia'+(pasado?' pasado':'')+(pronto?' pronto':'')+(ocupado?' ocupado':'')+(fecha===s?' elegido':'')+'"'+
+              ' data-f="'+s+'"'+(pasado||pronto||ocupado||ciego?' disabled':'')+
+              ' aria-label="'+d+' de '+verMes.toLocaleDateString('es-CL',{month:'long'})+(ocupado?', ya tomado':(pronto?', se reserva con 2 días de anticipación':''))+'">'+d+'</button>';
     }
     $('dias').innerHTML = html;
     $('antes').disabled = (y===hoy.getFullYear() && m===hoy.getMonth());
@@ -478,7 +986,10 @@
 
     var nota = $('cal-nota');
     if (nota){
-      if (sinDatos){
+      if (sinDatos && comprobando){
+        nota.innerHTML = '<b>Revisando qué días están libres…</b>';
+        nota.hidden = false;
+      } else if (sinDatos){
         nota.innerHTML = '<b>No pudimos cargar la disponibilidad.</b> Escríbenos por WhatsApp ' +
           'y te confirmamos al tiro si tu fecha está libre.';
         nota.hidden = false;
@@ -492,39 +1003,132 @@
     }
   }
 
+  /* --- numero de reserva ---------------------------------------------- */
+  /* MM- + dia y mes del evento + 3 letras o numeros sin los que se
+     confunden (0, O, 1, I, L). Se genera aqui, sin preguntarle a nadie, y se
+     mantiene mientras no cambie la seleccion. La duena lo copia a Notion
+     para cruzar el chat con la fila del arriendo. */
+  var SIN_AMBIGUOS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  var numero = '', numeroDe = '';
+  function numeroReserva(){
+    var clave = fecha + '|' + elegidos.slice().sort().join(',');
+    if (clave !== numeroDe || !numero){
+      var al = null;
+      try { al = new Uint32Array(3); (window.crypto || window.msCrypto).getRandomValues(al); } catch(e){ al = null; }
+      var r = '';
+      for (var i=0;i<3;i++){
+        var n = al ? al[i] : Math.floor(Math.random() * 4294967296);
+        r += SIN_AMBIGUOS.charAt(n % SIN_AMBIGUOS.length);
+      }
+      numero = 'MM-' + fecha.slice(8,10) + fecha.slice(5,7) + '-' + r;
+      numeroDe = clave;
+    }
+    return numero;
+  }
+
+  /* --- cotizacion ----------------------------------------------------- */
+  /* Solo con lo confirmado: precio y abono de cada juego, el precio por
+     llevar dos juntos, traslado dentro de la comuna (el valor del sector si
+     la persona nombro uno conocido; si no, los dos valores) y generador si
+     no hay enchufe. Fuera de la comuna el traslado se cotiza por WhatsApp. */
+  function cotizar(js){
+    var c = { total:0, abono:0, min:0, max:0, lineas:[], que:[], junto:null };
+    js.forEach(function(j){ c.total += Number(j.precio)||0; c.abono += Number(j.abono)||0; });
+    if (js.length === 2){
+      c.junto = juntoDe(js[0], js[1]);
+      if (c.junto) c.total = c.junto.precio;
+    }
+    c.min = c.max = c.total;
+    if (extra.lugar === 'comuna'){
+      /* Un solo traslado aunque vayan dos juegos: si es por viaje o por
+         juego es Dato a confirmar. Por eso todo dice «Estimado». */
+      var tr = trasladoDe(extra.sector);
+      c.min += tr.min; c.max += tr.max; c.que.push('traslado');
+      c.lineas.push(tr.sector ? '🚗 Traslado a ' + tr.sector + ': ' + clp(tr.min)
+                              : '🚗 Traslado dentro de la comuna: ' + oUno(tr.min, tr.max));
+    } else if (extra.lugar === 'fuera'){
+      c.lineas.push('🚗 Traslado fuera de la comuna: por cotizar');
+    }
+    if (extra.enchufe === 'No'){
+      c.min += COND.generador; c.max += COND.generador; c.que.push('generador');
+      c.lineas.push('⚡ Generador: ' + clp(COND.generador));
+    } else if (extra.enchufe === 'No sé'){
+      c.lineas.push('⚡ Si no hay enchufe, generador ' + clp(COND.generador));
+    }
+    c.estimado = c.que.length ? rango(c.min, c.max) + (extra.lugar === 'fuera' ? ' más el traslado' : '') : '';
+    return c;
+  }
+
+  /* --- barra y mensaje ------------------------------------------------ */
+  var gracias = '';   // destino del enlace «Ver qué pasa ahora» (gracias/)
+  var listoNum = '';  // numero de reserva del aviso «Te abrimos WhatsApp» que esta a la vista
+
   function barra(){
     var js = juegosElegidos();
     var a = $('pedir'), e = $('estado');
     if (!js.length || !fecha){
       e.innerHTML = 'Elige tu juego y una fecha<small>'+
         (js.length ? (js.length===1?'Ya tienes el juego: falta el día':'Ya tienes los juegos: falta el día')
-                   : (fecha ? 'Ya tienes el día: falta el juego' : 'Puedes elegir más de uno; te armamos el mensaje listo para enviar'))+'</small>';
-      a.setAttribute('aria-disabled','true'); a.removeAttribute('href'); return;
+                   : (fecha ? 'Ya tienes el día: falta el juego'
+                            : 'Puedes elegir hasta dos; te armamos el mensaje<span class="largo"> listo para enviar</span>'))+'</small>';
+      a.setAttribute('aria-disabled','true'); a.removeAttribute('href'); a.tabIndex = -1;
+      $('barra').classList.remove('lista');
+      gracias = '';
+      $('listo').hidden = true; listoNum = '';
+      return;
     }
-    var total = 0, abono = 0;
-    js.forEach(function(j){ total += Number(j.precio)||0; abono += Number(j.abono)||0; });
+    var c = cotizar(js), n = numeroReserva();
     var bonita = new Date(fecha+'T12:00:00').toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
     var titulo = js.length===1 ? esc(js[0].nombre) : js.length+' juegos';
-    e.innerHTML = titulo+' · '+clp(total)+'<small>'+bonita+(abono?' · abono '+clp(abono):'')+'</small>';
-    a.setAttribute('aria-disabled','false');
+    var est = c.estimado ? '. Estimado con ' + c.que.join(' y ') + ': ' + c.estimado
+            : (extra.lugar === 'fuera' ? '. El traslado se cotiza por WhatsApp' : '');
+    e.innerHTML = titulo + ', ' + clp(c.total) + '<small>' + bonita + (c.abono ? ', abono ' + clp(c.abono) : '') +
+      (c.junto ? '. Precio por llevar los dos juntos' : '') + esc(est) + '</small>';
+    a.setAttribute('aria-disabled','false'); a.removeAttribute('tabindex');
+    $('barra').classList.add('lista');
 
-    /* Con un juego el mensaje queda igual que siempre —es el caso normal y
-       el que muestra el manual—; con varios se listan uno por linea y se
-       agrega el total, para que ella no tenga que sumar. */
+    /* Con un juego, una linea con precio y abono; con varios, uno por linea
+       y el total, para que no haya que sacar la cuenta. Si los dos tienen
+       precio por llevarlos juntos, el total es ese y se dice cuanto salian
+       por separado. */
     var lineas = js.map(function(j){
       return '🎈 ' + j.nombre + (js.length>1
         ? ' — ' + clp(j.precio) + (j.abono ? ' (abono ' + clp(j.abono) + ')' : '')
         : '');
     }).join('\n');
     var plata = js.length>1
-      ? '💵 Total ' + clp(total) + (abono ? ' · abono ' + clp(abono) : '')
-      : '💵 ' + clp(total) + (abono ? '  (abono ' + clp(abono) + ')' : '');
+      ? (c.junto ? '💵 Los dos juntos ' + clp(c.total) + ' (por separado ' + clp(c.junto.suma) + ')'
+                 : '💵 Total juegos ' + clp(c.total)) + (c.abono ? ', abono ' + clp(c.abono) : '')
+      : '💵 ' + clp(c.total) + (c.abono ? ' (abono ' + clp(c.abono) + ')' : '');
+    var desglose = c.lineas.length ? '\n' + c.lineas.join('\n') : '';
+    if (c.estimado) desglose += '\n🧮 Estimado: ' + c.estimado;
 
     a.href = 'https://wa.me/'+WSP+'?text='+encodeURIComponent(
-      '¡Hola Mundo Mágico! Quiero reservar:\n\n'+
+      '¡Hola Mundo Mágico! Quiero reservar (N.º ' + n + '):\n\n'+
       lineas+'\n'+
       '📅 '+bonita+'\n'+
-      plata + cuento());
+      plata + desglose + cuento() + (canal ? '\n\n(' + canal + ')' : ''));
+
+    /* Lo que viaja a la pagina de gracias: numero, fecha, juegos y montos.
+       Nunca nombre, direccion ni nada que la persona escribio. Va despues
+       del #, que el navegador no le manda a ningun servidor. `pk` avisa que
+       el total es el precio por llevar los dos juntos; `x`, que extras trae
+       el estimado (t = traslado, g = generador). */
+    var q = 'n=' + encodeURIComponent(n) + '&f=' + fecha +
+      '&j=' + encodeURIComponent(js.map(function(j){ return j.nombre; }).join('|')) +
+      '&t=' + c.total + '&a=' + c.abono + (c.junto ? '&pk=1' : '');
+    if (c.estimado) q += '&e1=' + c.min + '&e2=' + c.max +
+      '&x=' + c.que.map(function(k){ return k.charAt(0); }).join('') + (extra.lugar === 'fuera' ? '&tf=1' : '');
+    else if (extra.lugar === 'fuera') q += '&tf=1';
+    gracias = 'gracias/#' + q;
+
+    /* El aviso de «Te abrimos WhatsApp» vale para ESE numero: si cambia el
+       juego o la fecha, se esconde; si solo cambio un dato, se actualiza. */
+    if (listoNum){
+      var enlace = $('listo').querySelector('a');
+      if (listoNum === n){ if (enlace) enlace.href = gracias; }
+      else { $('listo').hidden = true; listoNum = ''; }
+    }
   }
 
   /* Solo lo que la persona escribio. Una etiqueta vacia no le sirve a
@@ -541,20 +1145,50 @@
     return l.length ? '\n\n' + l.join('\n') : '';
   }
 
+  /* Consulta general: siempre activa, aunque no se haya elegido nada. */
+  $('dudas').href = 'https://wa.me/' + WSP + '?text=' + encodeURIComponent(
+    '¡Hola Mundo Mágico! Tengo una consulta.' + (canal ? '\n\n(' + canal + ')' : ''));
+
+  /* WhatsApp se abre en ESTA misma pestana, como funciono siempre. Abrir
+     otra pestana y mover esta sola a «gracias» no se probo en el navegador
+     interno de Facebook (la unica red del negocio), y ahi podia cortar la
+     apertura de WhatsApp. Al tocar solo se deja escrito el
+     numero y un enlace a los pasos que siguen, para quien vuelva a la
+     pagina. Nada navega solo. */
+  function mostrarListo(){
+    var el = $('listo');
+    if (!el || !numero || !gracias) return;
+    listoNum = numero;
+    el.textContent = '';
+    el.appendChild(document.createTextNode('✓ Te abrimos WhatsApp con el pedido '));
+    var b = document.createElement('b'); b.textContent = 'N.º ' + numero; el.appendChild(b);
+    el.appendChild(document.createTextNode('. Si no se abrió, toca «Reservar por WhatsApp» otra vez. '));
+    var l = document.createElement('a'); l.href = gracias; l.textContent = 'Ver qué pasa ahora'; el.appendChild(l);
+    el.hidden = false;
+  }
+  $('pedir').addEventListener('click', function(ev){
+    if ($('pedir').getAttribute('aria-disabled') === 'true'){ ev.preventDefault(); return; }
+    mostrarListo();
+  });
+
   document.addEventListener('click', function(ev){
     var b = ev.target.closest ? ev.target.closest('[data-j]') : null;
     if (b){
+      if (b.disabled) return;
       var id = b.getAttribute('data-j');
       var i = elegidos.indexOf(id);
       if (i === -1) elegidos.push(id); else elegidos.splice(i, 1);
-      /* Si la fecha elegida no sirve para el juego nuevo, se suelta:
-         mas vale que elija otra a que mande un pedido imposible. */
+      /* Respaldo: si con el cambio la fecha ya no sirve, se suelta. Mas
+         vale que elija otra a que mande un pedido imposible. */
       if (fecha && noDisponible(fecha)) fecha = null;
       pintarJuegos(); pintarCal(); barra();
       return;
     }
     var d = ev.target.closest ? ev.target.closest('[data-f]') : null;
-    if (d && !d.disabled){ fecha = (fecha===d.getAttribute('data-f')) ? null : d.getAttribute('data-f'); pintarCal(); barra(); return; }
+    if (d && !d.disabled){
+      fecha = (fecha===d.getAttribute('data-f')) ? null : d.getAttribute('data-f');
+      pintarJuegos(); pintarCal(); barra(); return;
+    }
   });
   CAMPOS.forEach(function(c){
     var el = $(c.id);
@@ -562,8 +1196,8 @@
     el.addEventListener('input', function(){ extra[c.clave] = el.value.trim(); barra(); });
   });
 
-  /* Los botones de si/no y del piso: se marcan, y volver a tocar el que ya
-     estaba marcado lo suelta, por si alguien se equivoco. */
+  /* Los botones de si/no, del lugar y del piso: se marcan, y volver a tocar
+     el que ya estaba marcado lo suelta, por si alguien se equivoco. */
   Array.prototype.forEach.call(document.querySelectorAll('[data-g]'), function(b){
     b.addEventListener('click', function(){
       var g = b.getAttribute('data-g'), v = b.getAttribute('data-v');
@@ -578,29 +1212,33 @@
   $('antes').addEventListener('click', function(){ verMes.setMonth(verMes.getMonth()-1); pintarCal(); });
   $('despues').addEventListener('click', function(){ verMes.setMonth(verMes.getMonth()+1); pintarCal(); });
 
+  var UN_DIA = 24*60*60*1000;
   function aplicar(d, provisional){
     D = d || {};
     JUEGOS = D.juegos || [];
     LLENOS = D.diasLlenos || [];
     POR_JUEGO = D.ocupados || {};
-    /* Solo una respuesta con fecha y sin error cuenta como saber algo. */
-    sinDatos = !D.actualizado || !!D.error;
+    MAXDIA = Number(D.maxPorDia) > 0 ? Number(D.maxPorDia) : 2;
+    var edad = D.actualizado ? Date.now() - Date.parse(D.actualizado) : NaN;
+    /* Solo una respuesta con fecha y sin error cuenta como saber algo. Una
+       copia de este navegador con mas de un dia no basta para ofrecer dias:
+       mientras el puente no conteste, el calendario manda a escribir. */
+    sinDatos = !D.actualizado || !!D.error || (provisional && !(edad <= UN_DIA));
     HASTA = D.hasta || topePorDefecto();
-    /* Las URL de foto de Notion caducan a la hora. La copia guardada en el
-       navegador puede ser de ayer: mejor tarjeta sin foto que icono roto. */
-    if (provisional && D.actualizado && (Date.now() - Date.parse(D.actualizado)) > 50*60*1000){
+    /* Las URL de foto de Notion caducan a la hora. Con una copia de mas de
+       50 min se usan las fotos de respaldo del repo. */
+    if (provisional && D.actualizado && !(edad <= 50*60*1000)){
       JUEGOS = JUEGOS.map(function(j){
         var c = {}; for (var k in j) if (Object.prototype.hasOwnProperty.call(j,k)) c[k] = j[k];
-        c.foto = ''; return c;
+        c.foto = ''; c.fotos = []; return c;
       });
     }
     /* Si un juego dejo de estar disponible en Notion, se cae de la
        seleccion en vez de quedar colgado en el mensaje. */
-    elegidos = elegidos.filter(function(id){
-      return JUEGOS.some(function(j){ return j.id === id; });
-    });
+    elegidos = elegidos.filter(function(id){ return !!juegoPorId(id); });
+    if (elegidos.length > MAXDIA) elegidos = elegidos.slice(0, MAXDIA);
     if (fecha && noDisponible(fecha)) fecha = null;
-    pintarJuegos(); pintarCal(); barra();
+    pintarJuegos(); pintarCal(); barra(); pintarResenas();
 
     var pie = $('pie-fecha');
     if (!pie) return;
@@ -609,11 +1247,12 @@
       return;
     }
     if (!D.actualizado){ pie.textContent = ''; return; }
-    pie.textContent = 'Disponibilidad actualizada el ' +
+    var partes = ['Disponibilidad actualizada el ' +
       String(D.actualizado).slice(8,10) + '/' + String(D.actualizado).slice(5,7) +
-      ' a las ' + String(D.actualizado).slice(11,16) +
-      (D.respaldo ? ' · mostrando la última copia guardada' : '') +
-      (provisional ? ' · comprobando…' : '');
+      ' a las ' + String(D.actualizado).slice(11,16)];
+    if (D.respaldo) partes.push('mostrando la última copia guardada');
+    if (provisional) partes.push('comprobando…');
+    pie.textContent = partes.join(', ');
   }
 
   /* Se pinta primero lo ultimo que se supo en este navegador, para que la
@@ -625,14 +1264,17 @@
     if (guardado){ aplicar(JSON.parse(guardado), true); hubo = true; }
   } catch(e){}
   if (!hubo) aplicar(D, true);
+  pintarGaleria();
 
   /* Cuando el puente no sirve, se conserva lo que ya estaba en pantalla en
      vez de reemplazarlo por vacio, y se avisa donde el visitante mira. */
   function fallo(){
+    comprobando = false;
     var pie = $('pie-fecha');
     if (JUEGOS.length){
-      if (pie) pie.textContent = pie.textContent.replace(' · comprobando…','') +
-        ' · no pudimos comprobar si cambió algo';
+      if (pie && pie.textContent) pie.textContent = pie.textContent.replace(', comprobando…','') +
+        ', no pudimos comprobar si cambió algo';
+      pintarCal();
     } else {
       sinDatos = true;
       $('juegos').innerHTML = '<li class="aviso-vacio">No pudimos cargar los juegos en este momento. ' +
@@ -646,9 +1288,10 @@
     .then(function(r){ return r.json(); })
     .then(function(d){
       /* El puente responde 200 tambien cuando Notion se cayo o falta el
-         token. Aplicar eso borraria de la pantalla —y del navegador— la
+         token. Aplicar eso borraria de la pantalla (y del navegador) la
          copia buena, y dejaria el calendario entero en blanco. */
       if (!d || d.error || !d.actualizado){ fallo(); return; }
+      comprobando = false;
       aplicar(d, false);
       try { localStorage.setItem(MEM, JSON.stringify(d)); } catch(e){}
     })
