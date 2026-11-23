@@ -306,7 +306,8 @@
 <section>
   <div class="wrap">
     <div class="titulo"><span class="n">03</span><h2>Cuéntanos un poco</h2></div>
-    <p class="intro">Nada de esto es obligatorio, pero lo que escribas viaja en el mensaje y nos
+    <p class="intro">Solo una pregunta es obligatoria: si el vehículo puede llegar hasta donde se arma el juego.
+    Lo demás es opcional, pero lo que escribas viaja en el mensaje y nos
     ahorra la mitad de la conversación. Lo que dejes en blanco, simplemente no se manda.</p>
 
     <div class="datos-caja">
@@ -350,6 +351,14 @@
           <button type="button" data-g="piso" data-v="pasto" aria-pressed="false">Pasto</button>
           <button type="button" data-g="piso" data-v="cemento" aria-pressed="false">Cemento</button>
           <button type="button" data-g="piso" data-v="tierra" aria-pressed="false">Tierra</button>
+        </div>
+      </div>
+      <div class="campo">
+        <span class="label" id="lbl-vehiculo">¿Hay ingreso para el vehículo hasta el lugar donde se arma? <b>(obligatorio)</b></span>
+        <div class="opciones" role="group" aria-labelledby="lbl-vehiculo">
+          <button type="button" data-g="vehiculo" data-v="Sí" aria-pressed="false">Sí</button>
+          <button type="button" data-g="vehiculo" data-v="No" aria-pressed="false">No</button>
+          <button type="button" data-g="vehiculo" data-v="No sé" aria-pressed="false">No sé</button>
         </div>
       </div>
     </div>
@@ -532,8 +541,8 @@
            o efectivo; sin garantia; la lluvia devuelve el abono y decide el cliente; el
            viento solo si es muy fuerte; cancelar por otro motivo no devuelve el abono,
            pero se puede reagendar; traslado 5.000 en sectores cercanos (Figueroa) y
-           10.000 en Batuco o Corinto; los 2 inflables juntos, o el grande con la mesa,
-           en 100.000; pasto o cemento con acceso de vehiculo; sin zapatos y con un
+           10.000 en Batuco o Corinto; el Mega (Multiproposito) con la mesa en 100.000 y
+           abono 25.000 (22-nov 21:06: los 2 inflables juntos NO van en la promo); pasto o cemento con acceso de vehiculo; sin zapatos y con un
            adulto a cargo; monitor solo si se pide; atiende de 08:00 a 22:00.
            Datos a confirmar, NO se publican: precio del monitor; IVA; si el traslado se
            cobra por viaje o por juego cuando van dos; el abono cuando se llevan dos
@@ -617,12 +626,12 @@
     anticipacion: 2                  // dias minimos para reservar
   };
 
-  /* Precio por llevar dos juegos juntos: los dos inflables, o el inflable
-     grande con la mesa, quedan en 100.000 (duena, 21-nov). Solo esas dos
-     combinaciones; cualquier otra suma los precios de cada juego. */
+  /* Precio por llevar dos juegos juntos: SOLO el Mega (la duena lo llama
+     Multiproposito) con la mesa de air hockey, 100.000 con abono 25.000
+     (duena, 22-nov 21:06: «la promocion de 100 es el multiproposito y la mesa»).
+     Cualquier otra combinacion suma los precios de cada juego. */
   var JUNTOS = [
-    { ids: [ID.mega, ID.amarillo], precio: 100000, abono: 25000 },
-    { ids: [ID.mega, ID.mesa],     precio: 100000, abono: 25000 }
+    { ids: [ID.mega, ID.mesa], precio: 100000, abono: 25000 }
   ];
 
   /* Por donde llego la persona, desde la direccion: ?c=ig, fb, tt, wa, qr o rec.
@@ -682,9 +691,10 @@
   ];
   var GRUPOS = [
     { clave:'enchufe', linea:'🔌 ¿Hay enchufe cerca? ' },
-    { clave:'piso',    linea:'🌱 El piso es de: ' }
+    { clave:'piso',    linea:'🌱 El piso es de: ' },
+    { clave:'vehiculo', linea:'🚚 ¿Hay ingreso para el vehículo? ' }
   ];
-  var extra = { nombre:'', sector:'', dir:'', hora:'', lugar:'', enchufe:'', piso:'' };
+  var extra = { nombre:'', sector:'', dir:'', hora:'', lugar:'', enchufe:'', piso:'', vehiculo:'' };
   /* Se pueden elegir varios juegos para el mismo dia (confirmado el
      6-sep-2026: el tope son juegos, no reservas). Lo que se acaba es la
      capacidad de instalar: MAXDIA juegos por dia, contando los que ya estan
@@ -1077,6 +1087,16 @@
       $('listo').hidden = true; listoNum = '';
       return;
     }
+    /* Obligatorio (duena, 22-nov 21:08): saber si el vehiculo llega hasta donde
+       se arma. Sin esa respuesta no se arma el mensaje. */
+    if (!extra.vehiculo){
+      e.innerHTML = 'Falta una respuesta<small>¿Hay ingreso para el vehículo hasta donde se arma? Está en «Cuéntanos un poco»</small>';
+      a.setAttribute('aria-disabled','true'); a.removeAttribute('href'); a.tabIndex = -1;
+      $('barra').classList.remove('lista');
+      gracias = '';
+      $('listo').hidden = true; listoNum = '';
+      return;
+    }
     var c = cotizar(js), n = numeroReserva();
     var bonita = new Date(fecha+'T12:00:00').toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
     var titulo = js.length===1 ? esc(js[0].nombre) : js.length+' juegos';
@@ -1116,7 +1136,8 @@
        el estimado (t = traslado, g = generador). */
     var q = 'n=' + encodeURIComponent(n) + '&f=' + fecha +
       '&j=' + encodeURIComponent(js.map(function(j){ return j.nombre; }).join('|')) +
-      '&t=' + c.total + '&a=' + c.abono + (c.junto ? '&pk=1' : '');
+      '&t=' + c.total + '&a=' + c.abono + (c.junto ? '&pk=1' : '') +
+      '&v=' + encodeURIComponent(extra.vehiculo);
     if (c.estimado) q += '&e1=' + c.min + '&e2=' + c.max +
       '&x=' + c.que.map(function(k){ return k.charAt(0); }).join('') + (extra.lugar === 'fuera' ? '&tf=1' : '');
     else if (extra.lugar === 'fuera') q += '&tf=1';

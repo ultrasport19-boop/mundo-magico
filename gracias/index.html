@@ -128,6 +128,8 @@
   var trasladoFuera = p.tf === '1';
   /* `pk=1`: el total es el precio por llevar los dos juegos juntos. */
   var juntos = p.pk === '1' && juegos.length === 2;
+  /* `v`: si hay ingreso para el vehiculo (Si, No o No se). Solo esos tres valores. */
+  var vehiculo = ['Sí', 'No', 'No sé'].indexOf(p.v) !== -1 ? p.v : '';
   /* `x`: que extras trae el estimado. Solo estas tres combinaciones. */
   var EXTRAS = { t: 'traslado', g: 'generador', tg: 'traslado y generador' };
   var extras = Object.prototype.hasOwnProperty.call(EXTRAS, p.x || '') ? EXTRAS[p.x] : '';
@@ -154,6 +156,7 @@
                                   (e1 === e2 ? clp(e1) : clp(e1) + ' a ' + clp(e2)) +
                                   (trasladoFuera ? ' más el traslado' : '')]);
   else if (trasladoFuera) filas.push(['🚗', 'El traslado fuera de la comuna se cotiza por WhatsApp']);
+  if (vehiculo) filas.push(['🚚', 'Ingreso para el vehículo: ' + vehiculo]);
   $('resumen').innerHTML = '';
   filas.forEach(function(f){
     var li = document.createElement('li');
@@ -172,7 +175,8 @@
   var texto = '¡Hola Mundo Mágico! Quiero reservar (N.º ' + numero + '):\n\n' +
     juegos.map(function(j){ return '🎈 ' + j; }).join('\n') + '\n' +
     '📅 ' + bonita + '\n' +
-    '💵 ' + (juntos ? 'Los dos juntos ' : (juegos.length > 1 ? 'Total juegos ' : '')) + clp(total) + (abono ? (juegos.length > 1 ? ', abono ' : ' (abono ') + clp(abono) + (juegos.length > 1 ? '' : ')') : '');
+    '💵 ' + (juntos ? 'Los dos juntos ' : (juegos.length > 1 ? 'Total juegos ' : '')) + clp(total) + (abono ? (juegos.length > 1 ? ', abono ' : ' (abono ') + clp(abono) + (juegos.length > 1 ? '' : ')') : '') +
+    (vehiculo ? '\n🚚 ¿Hay ingreso para el vehículo? ' + vehiculo : '');
   $('otra-vez').href = 'https://wa.me/' + WSP + '?text=' + encodeURIComponent(texto);
 })();
 </script>
