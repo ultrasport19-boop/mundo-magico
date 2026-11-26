@@ -220,6 +220,10 @@
   .galeria img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:16px;display:block;box-shadow:var(--sombra)}
 
   footer{background:var(--tinta);color:var(--crema-2);padding:34px 0 40px;font-size:.92rem}
+  footer .redes{display:flex;gap:10px;flex-wrap:wrap}
+  footer .redes a{display:inline-flex;align-items:center;gap:8px;color:inherit;text-decoration:none;border:1px solid currentColor;border-radius:999px;padding:8px 14px;font-weight:700;min-height:44px}
+  footer .redes a:hover,footer .redes a:focus-visible{background:rgba(255,255,255,.12)}
+  footer .redes svg{width:20px;height:20px}
   footer .wrap{display:flex;gap:18px;justify-content:space-between;flex-wrap:wrap;align-items:flex-start}
   footer .privacidad{flex-basis:100%;margin:6px 0 0;font-size:.84rem;color:#CDBFA8;max-width:70ch}
 
@@ -575,8 +579,14 @@
     <div><b>Mundo Mágico Pencahue</b><br>Juegos inflables para cumpleaños</div>
     <div id="pie-fecha"></div>
     <div>Arrendamos todos los días.<br>Respondemos por WhatsApp de 08:00 a 22:00.</div>
-    <!-- Dato a confirmar (C27): enlace a la pagina de Facebook del negocio (es la unica
-         red que usa), cuando este su direccion. -->
+    <div class="redes" aria-label="Síguenos">
+      <a href="https://www.facebook.com/profile.php?id=100075939350894" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.5V4.4c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.4H8.1v3h2.5V21h2.9z"/></svg>
+        <span>Facebook</span></a>
+      <a href="https://www.instagram.com/mundo_magicopencahue/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 7.3A4.7 4.7 0 1 0 12 16.7 4.7 4.7 0 0 0 12 7.3zm0 7.7a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm6-7.9a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0zM12 4.6c2.4 0 2.7 0 3.6.1 2.4.1 3.6 1.3 3.7 3.7.1.9.1 1.2.1 3.6s0 2.7-.1 3.6c-.1 2.4-1.3 3.6-3.7 3.7-.9.1-1.2.1-3.6.1s-2.7 0-3.6-.1c-2.4-.1-3.6-1.3-3.7-3.7-.1-.9-.1-1.2-.1-3.6s0-2.7.1-3.6C4.8 6 6 4.8 8.4 4.7c.9-.1 1.2-.1 3.6-.1zM12 3c-2.4 0-2.8 0-3.7.1C5 3.2 3.2 5 3.1 8.3 3 9.2 3 9.6 3 12s0 2.8.1 3.7c.1 3.3 1.9 5.1 5.2 5.2.9.1 1.3.1 3.7.1s2.8 0 3.7-.1c3.3-.1 5.1-1.9 5.2-5.2.1-.9.1-1.3.1-3.7s0-2.8-.1-3.7C20.8 5 19 3.2 15.7 3.1 14.8 3 14.4 3 12 3z"/></svg>
+        <span>Instagram</span></a>
+    </div>
     <p class="privacidad">Esta página no guarda lo que escribes ni lo envía a ningún servidor:
     solo arma el mensaje de WhatsApp, y tú decides si lo mandas.</p>
     <!-- Dato a confirmar (C29), texto por aprobar con la duena antes de publicarlo:
